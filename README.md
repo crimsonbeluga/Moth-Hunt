@@ -67,7 +67,11 @@ If Unity reports missing URP settings: make sure Packages/ and ProjectSettings/ 
 If still pink, check Project Settings → Graphics/Quality and verify URP assets are assigned.
 
 🗂️ Project Structure (What goes where and why)
+
+
 Assets/_Project/
+
+
   Art/              # All visual assets
     Characters_2D/  # Player & allies sprites
     Enemies_2D/     # Human & trap sprites
