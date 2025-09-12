@@ -1,35 +1,31 @@
 Moth Hunt (Unity • 2.5D • URP)
 
 A student team project built in Unity using 3D environments + 2D sprites with the Universal Render Pipeline (URP).
-
 This document is written for everyone on the team, including artists and designers who may be new to Git or Unity project conventions.
 
-Requirements
+✅ Requirements
 
 Unity: 6000.2.4f1 (everyone must install this exact version)
+
 Git + Git LFS installed (LFS = “Large File Storage” for big art/audio files)
+
 GitHub account with access to this repository
 
-Why exact Unity version? Unity projects change format between versions. If we all use the same version, we avoid import errors and weird pink shaders.
+Why exact Unity version?
+Unity projects change format between versions. If we all use the same version, we avoid import errors and weird pink shaders.
 
-What is Git? What is Git LFS? (Plain-English)
+🧠 What is Git? What is Git LFS? (Plain-English)
 
-Git is shared history for our project. It saves snapshots (commits) of files so we can go back in time and work together safely.
+Git = shared history for our project. It saves snapshots (commits) so we can go back in time and work together safely.
 
-GitHub is the website that hosts our Git repository so everyone can download (clone) and contribute.
+GitHub = the website that hosts our Git repository so everyone can download (clone) and contribute.
 
-Git LFS (Large File Storage) is an add-on that stores big files (PNGs, PSDs, FBXs, WAVs, scenes, prefabs, etc.) efficiently. Without LFS, pushes can fail (files too big), or teammates download tiny “pointer files” instead of the real assets.
+Git LFS = an add-on that stores big files (PNGs, PSDs, FBXs, WAVs, scenes, prefabs, etc.) efficiently.
 
 Mental model:
+Git = the shared notebook • GitHub = the bookshelf • LFS = the big plastic folder for heavy art so the notebook doesn’t tear.
 
-Git = the shared notebook.
-
-GitHub = the bookshelf where the notebook lives.
-
-LFS = the big plastic folder where we keep heavy art files so the notebook doesn’t tear.
-
-Getting Started (Clone & Open)
-
+🚀 Getting Started (Clone & Open)
 Option A — GitHub Desktop (recommended for artists/designers)
 
 Install GitHub Desktop and log in.
@@ -38,27 +34,28 @@ Click “Clone a repository from the Internet…”.
 
 URL: https://github.com/crimsonbeluga/Moth-Hunt.git
 
-Choose a local folder and click “Clone”.
+Choose a local folder → Clone.
 
-After cloning, open a terminal from the repository and run:
+Open a terminal in the repo folder and run:
+
 git lfs install
+
 git lfs fetch --all
+
 git lfs checkout
-(Why? This ensures large art files are actually downloaded, not just pointers.)
+(Ensures large art files download, not just tiny “pointer files.”)
 
-Open Unity Hub → Add → select your local “Moth-Hunt” folder → Open.
+Open Unity Hub → Add → select your local Moth-Hunt folder → Open.
 
-First import may take a few minutes. That’s normal.
+First import may take a few minutes. (Normal!)
 
-Option B — Command line (for anyone comfortable with commands)
+Option B — Command line
 
 Clone the repository:
 git clone https://github.com/crimsonbeluga/Moth-Hunt.git
-
 cd Moth-Hunt
 
-Install LFS (first time on each machine):
-git lfs install
+Install LFS (first time): git lfs install
 
 Fetch and checkout large files:
 git lfs fetch --all
@@ -66,231 +63,255 @@ git lfs checkout
 
 Open the folder in Unity Hub → Open.
 
-If Unity reports missing URP settings: make sure Packages/ and ProjectSettings/ exist in your local clone (they are committed). Reopen Unity. If still pink, check Project Settings → Graphics/Quality to verify URP assets are assigned.
+If Unity reports missing URP settings: make sure Packages/ and ProjectSettings/ exist. Reopen Unity.
+If still pink, check Project Settings → Graphics/Quality and verify URP assets are assigned.
 
-Project Structure (What goes where and why)
-
+🗂️ Project Structure (What goes where and why)
 Assets/_Project/
-• Art/ — All visual assets.
-– Characters_2D/ (sprites for player, allies)
-– Enemies_2D/ (sprites for humans, traps)
-– Environment_3D/ (meshes, textures, materials for world)
-– Props_3D/ (small placeable 3D items)
-– UI/ (icons, buttons, HUD sprites)
-– Materials/ (shared materials)
-– Shaders/ (shader graphs or custom shaders)
-Why: Artists know exactly where to put new art. Programmers can quickly find assets.
+  Art/              # All visual assets
+    Characters_2D/  # Player & allies sprites
+    Enemies_2D/     # Human & trap sprites
+    Environment_3D/ # Meshes, textures, materials for world
+    Props_3D/       # Small placeable 3D items
+    UI/             # Icons, buttons, HUD sprites
+    Materials/      # Shared materials
+    Shaders/        # Shader graphs or custom shaders
 
-• Audio/ — Music, SFX, and audio mixer.
-Why: Keeps sound assets separate and easy to mix.
+  Audio/            # Music, SFX, AudioMixer
 
-• Code/ — All scripts and tests.
-– Runtime/ (gameplay code that ships in builds)
-– Editor/ (tools that only run inside Unity Editor)
-– Tests/ (automated checks)
-Why: Separating Runtime vs Editor avoids build issues and speeds up compile.
+  Code/
+    Runtime/        # Gameplay code that ships in builds
+    Editor/         # Tools that only run in the Unity Editor
+    Tests/          # Automated checks
 
-• Prefabs/ — Reusable game objects.
-– Characters/, Enemies/, Environment/, Props/, UI/
-Why: “Everything reusable is a Prefab” prevents scene conflicts and keeps iteration fast.
+  Prefabs/          # Reusable game objects (Characters, Enemies, Environment, Props, UI)
 
-• Scenes/ — Unity scene files.
-– Game.unity (main game level)
-– Sandbox.unity (dev testing only, never shipped)
-– MainMenu.unity (added later)
-Why: One main scene to keep things simple; Sandbox to test your work safely.
+  Scenes/
+    Game.unity      # Main game level
+    Sandbox.unity   # Dev testing only (never shipped)
+    MainMenu.unity  # Added later
 
-• Settings/ — Project-wide configuration.
-– InputActions.inputactions (new Input System)
-– URP/ (URP pipeline asset, renderers, global settings, volume profiles)
-– Quality.asset, Physics.asset
-Why: One place for all project settings so nothing gets lost.
+  Settings/
+    InputActions.inputactions
+    URP/            # URP pipeline asset, renderers, global settings, volume profiles
+    Quality.asset, Physics.asset
 
-• UI/ — Our UI prefabs and assets.
-– Screens/ (full screens like HUD, Pause)
-– Widgets/ (reusable buttons, prompts)
-– Fonts/ (TextMesh Pro font assets + source TTF/OTF)
-– Styles/ (shared color/typography settings)
-Why: Clean separation makes UI easy to theme and reuse.
+  UI/
+    Screens/        # Full screens (HUD, Pause, etc.)
+    Widgets/        # Reusable buttons, prompts
+    Fonts/          # TextMesh Pro font assets + source TTF/OTF
+    Styles/         # Shared color/typography settings
 
-• VFX/ — Particle systems, special visual effects.
-Why: Central folder for visual polish.
+  VFX/              # Particle systems, special visual effects
+
 
 Rule of thumb:
 
-Raw sprites/textures go in Art/.
+Raw art (sprites/textures) → Art/
 
-Gameplay objects made from art go in Prefabs/.
+Gameplay objects made from art → Prefabs/
 
-Place prefabs into Scenes/.
+Place prefabs into Scenes/
 
-Scenes We Use (and the simple rule)
+🎭 Scenes We Use (and the simple rule)
 
 Game.unity — main gameplay. Only one person edits this at a time.
-Sandbox.unity — for testing your work (your playground). Keep it out of Build Settings.
+
+Sandbox.unity — your playground to test work. Keep it out of Build Settings.
+
 MainMenu.unity — we’ll add later.
 
-Why one person per scene? Scene files are huge text files. If two people edit the same scene, Git can’t merge cleanly and things break. Working in Prefabs lets many people work in parallel safely.
+Why one person per scene?
+Unity scenes are huge text files. If two people edit the same scene, Git can’t merge cleanly and things break. Using Prefabs lets many people work in parallel safely.
 
-Scene ownership policy:
+Scene Ownership Policy
 
 Announce in chat when you “take” Game.unity.
 
-git pull before you start.
+Pull before editing.
 
-Make changes, save, push, then say “Game.unity is free.”
-Everyone else: work in Prefabs or Sandbox.
+Make changes → save → push → say “Game.unity is free.”
 
-Version Control Basics (What to click/do every day)
+Everyone else works in Prefabs or Sandbox.
 
-Daily workflow (concept):
+🔁 Version Control Basics (What to do every day)
+Daily workflow
 
-Pull latest changes before you start work.
-GitHub Desktop: “Fetch origin” then “Pull”.
-Command line: git pull
+Pull latest changes
 
-Create a feature branch for your task.
-GitHub Desktop: Branch → New Branch… (name it like feature/enemy-ai)
-Command line: git checkout -b feature/enemy-ai
+GitHub Desktop: Fetch origin → Pull
 
-Make small, focused changes.
+CLI: git pull
 
-Save and commit.
-GitHub Desktop: Write a short summary → Commit to feature/enemy-ai.
-Command line: git add . then git commit -m "Add enemy patrol and vision cone"
+Create a feature branch for your task
 
-Push and open a Pull Request (PR) on GitHub.
-GitHub Desktop: Push origin → “Create Pull Request”.
-Command line: git push -u origin feature/enemy-ai, then open GitHub and create PR.
+Desktop: Branch → New Branch… (feature/enemy-ai)
 
-After your PR is reviewed and merged, clean up:
+CLI: git checkout -b feature/enemy-ai
+
+Make small, focused changes
+
+Commit
+
+Desktop: write a short summary → Commit to feature/enemy-ai
+
+CLI: git add . → git commit -m "Add enemy patrol and vision cone"
+
+Push & open a PR (Pull Request) on GitHub
+
+Desktop: Push origin → Create Pull Request
+
+CLI: git push -u origin feature/enemy-ai, then open GitHub and create PR
+
+After review & merge, sync and clean up:
+
 git checkout main
+
 git pull
+
 git branch -d feature/enemy-ai
 
-Why Pull Requests (PRs)? Another teammate reviews your changes before they land in main so we keep the game stable and avoid surprises.
+Why PRs? A teammate reviews your changes before they land in main so we keep the game stable and avoid surprises.
+Never commit directly to main. Always use a branch + PR.
 
-Never commit directly to main. Always use a feature branch and PR.
+🌿 Branching Model (Names & purpose)
 
-Branching Model (Names and purpose)
+main — protected, stable; we demo/build from this
 
-main — protected, stable; we demo/build from this.
-develop — optional integration branch if needed.
-feature/... — your task branches (feature/player-movement, feature/enemy-ai).
-hotfix/... — urgent fixes off main if something breaks after a merge.
+develop — optional integration branch if needed
 
-Naming tips:
+feature/... — task branches (e.g., feature/player-movement, feature/enemy-ai)
 
-Keep it short and descriptive.
+hotfix/... — urgent fixes off main
 
-Use dashes, not spaces (feature/moth-dash, feature/human-guard-sprite).
+Naming tips: short, descriptive, use dashes (e.g., feature/moth-dash, feature/human-guard-sprite).
 
-Commit Messages (What to write and why)
+✍️ Commit Messages (What to write & why)
 
-Use short, imperative subjects (a short action phrase), optional detail in the body.
+Use short, imperative subjects; optional detail in the body.
 
 Good examples:
+
 Add enemy patrol with vision cone
+
 Hook up light collectible to UI counter
+
 Fix URP renderer assignment in Quality settings
 
-Why? Clean history helps everyone understand what changed without opening files.
+Why? Clean history helps everyone understand what changed quickly.
 
-LFS: Locking Large Art Files (Optional but helpful)
+🔒 LFS: Locking Large Art Files (optional but helpful)
 
-If you’re editing a binary asset that others might also touch (PSD, PNG, FBX, WAV), you can “lock” it so nobody else edits it at the same time.
+If you’re editing a binary asset others might touch (PSD, PNG, FBX, WAV), you can lock it so nobody else edits it at the same time.
 
-Lock example:
-git lfs lock Assets/_Project/Art/Characters_2D/Sprites/Player/Idle/Player_Idle.png
+Lock: git lfs lock Assets/_Project/Art/Characters_2D/Sprites/Player/Idle/Player_Idle.png
 
-Unlock when done:
-git lfs unlock Assets/_Project/Art/Characters_2D/Sprites/Player/Idle/Player_Idle.png
+Unlock: git lfs unlock Assets/_Project/Art/Characters_2D/Sprites/Player/Idle/Player_Idle.png
 
-This avoids “last write wins” confusion on critical art files.
+Avoids “last write wins” on critical art files.
 
-Our Project Conventions (Input, Layers, Rendering)
+🎛️ Our Project Conventions (Input, Layers, Rendering)
 
-Input System: New Input System (file lives at Settings/InputActions.inputactions). This lets us map keyboard/mouse and controllers in one place.
+Input System: New Input System (file at Settings/InputActions.inputactions)
+Map keyboard/mouse & controllers in one place.
 
 Physics Layers (examples): Player, Enemy, Interactable, Collectible, Environment, Ground, Projectile, Triggers, Climbable, Raycast, UI, LightingFX
-Purpose: collision and raycasting rules (who bumps into who or what an interaction ray can hit).
+Purpose: collisions & raycasts (who bumps into who; what an interaction ray can hit).
 
-Sorting Layers (2D draw order): Background → Environment_Back → Ground → Environment_Front → Interactable → Collectible → Enemy → Player → Projectile → VFX_Back → UI_World → VFX_Front → UI
-Purpose: controls which sprites appear in front or behind others.
+Sorting Layers (2D draw order):
+Background → Environment_Back → Ground → Environment_Front → Interactable → Collectible → Enemy → Player → Projectile → VFX_Back → UI_World → VFX_Front → UI
+Purpose: which sprites render in front/behind.
 
-URP Rendering Layers (lighting control): Default, Player, Enemy, Environment, Collectible, Interactable, UI_World, FX/Lighting
-Purpose: decide which lights affect which things (e.g., collectibles glow without lighting the whole level).
+URP Rendering Layers (lighting control):
+Default, Player, Enemy, Environment, Collectible, Interactable, UI_World, FX/Lighting
+Purpose: which URP lights affect which objects (e.g., collectibles glow without lighting the whole level).
 
 Rule of thumb:
+Sorting Layers = visual draw order • Rendering Layers = lighting control • Physics Layers = gameplay collisions/raycasts
 
-Sorting Layers = draw order (what’s in front visually).
-
-Rendering Layers = who gets lit by which lights (URP feature).
-
-Physics Layers = collisions and raycasts (gameplay).
-
-Do’s and Don’ts (to prevent headaches)
+✅ Do’s and Don’ts (to prevent headaches)
 
 Do
-• Convert objects to Prefabs before placing them in a scene.
-• Keep assets in the correct folders (don’t dump files at the root).
-• Commit small chunks with clear messages.
-• Communicate when you’re taking Game.unity.
-• Pull before you work.
-• Use branches and PRs.
+
+Convert objects to Prefabs before placing in a scene
+
+Keep assets in the correct folders
+
+Commit small chunks with clear messages
+
+Communicate when you’re taking Game.unity
+
+Pull before you work
+
+Use branches and PRs
 
 Don’t
-• Edit Game.unity at the same time as someone else.
-• Commit Library/, Temp/, or other cache folders (our .gitignore blocks them).
-• Rename or move shared assets without telling the team (Unity references can break).
-• Push directly to main.
 
-Building the Game (for tests/demos)
+Edit Game.unity at the same time as someone else
+
+Commit Library/, Temp/, or other caches (our .gitignore blocks them)
+
+Rename/move shared assets without telling the team
+
+Push directly to main
+
+🏗️ Building the Game (tests/demos)
 
 Unity: File → Build Settings
-• Scenes in Build: Game (and later MainMenu)
-• Sandbox stays out of the build (dev only)
 
-If the build is pink or looks wrong: check that URP assets are assigned in Project Settings → Graphics and Quality.
+Scenes in Build: Game (and later MainMenu)
 
-Troubleshooting (Common problems and fixes)
+Exclude: Sandbox (dev only)
 
-I pushed and GitHub says “file > 100MB”
-• The file type may not be tracked by LFS yet. Add the extension to .gitattributes and migrate:
+If the build is pink/wrong: check Project Settings → Graphics/Quality and assign URP assets.
+
+🆘 Troubleshooting (Common fixes)
+
+“file > 100MB” on push
+
+That file type might not be tracked by LFS. Add extension to .gitattributes and migrate:
+
 git lfs migrate import --include="*.EXT"
+
 git push --force-with-lease
 
-I see tiny “pointer files” instead of real art
-• You forgot to install or fetch with LFS. Run:
-git lfs install
-git lfs fetch --all
-git lfs checkout
+I see pointer files, not real art
+
+Run: git lfs install → git lfs fetch --all → git lfs checkout
 
 CRLF/LF warnings on Windows
-• Set this once:
-git config core.autocrlf true
 
-Unity shows pink materials or missing pipeline
-• Ensure Packages/ and ProjectSettings/ are committed (they are).
-• Reopen Unity; verify URP assets in Graphics and Quality.
-• If needed, reassign the URP Render Pipeline Asset under Project Settings → Graphics.
+Run once: git config core.autocrlf true
 
-Pull failed because I have local changes
-• You probably edited the same file someone changed upstream. Options:
-– Commit your work on a branch first (recommended).
-– Or stash your changes: git stash, then git pull, then git stash pop.
-– If it’s a scene conflict, pick one version, then re-apply the other change via prefabs.
+Pink materials / missing pipeline
 
-Git says “nothing to commit” or “switch -m requires a value”
-• git commit needs a message in quotes. Example:
-git commit -m "Add collectible glow VFX"
+Ensure Packages/ and ProjectSettings/ exist
+
+Reopen Unity; verify URP assets in Graphics and Quality
+
+Reassign the URP Render Pipeline Asset if needed
+
+Pull failed: local changes
+
+You edited a file someone else changed.
+
+Commit your work on a branch (recommended)
+
+Or stash: git stash → git pull → git stash pop
+
+If it’s a scene conflict, pick one version, then re-apply the other change via prefabs
+
+Commit error: “switch -m requires a value”
+
+You forgot the message quotes. Example: git commit -m "Add collectible glow VFX"
 
 
-Quick Commands (reference)
+
+
+🧾 Quick Commands (reference)
 
 Clone:
 git clone https://github.com/crimsonbeluga/Moth-Hunt.git
-
 cd Moth-Hunt
 
 First-time LFS setup:
@@ -307,15 +328,14 @@ git commit -m "Do the thing"
 
 Push branch:
 git push -u origin feature/thing
+(Open PR on GitHub, get review, merge.)
 
-Open PR on GitHub, get review, merge.
-
-Sync and clean up after merge:
+Sync & clean up after merge:
 git checkout main
 git pull
 git branch -d feature/thing
 
-Lock a big art file while editing (optional):
+Lock big art file (optional):
 git lfs lock path/to/file
-When done:
+Unlock when done:
 git lfs unlock path/to/file
