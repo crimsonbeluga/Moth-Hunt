@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 3
+  tags: []
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Player
+  - Water
+  - UI
+  - Enemy
+  - Interactable
+  - Collectible
+  - Environment
+  - Ground
+  - Projectile
+  - Triggers
+  - Climbable
+  - Raycast
+  - LightingFX
+  - UI
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 425694425
+    locked: 0
+  - name: 'Environment_Back '
+    uniqueID: 910913779
+    locked: 0
+  - name: Ground
+    uniqueID: 1724587335
+    locked: 0
+  - name: Environment_Front
+    uniqueID: 3848379879
+    locked: 0
+  - name: Interactable
+    uniqueID: 3836439715
+    locked: 0
+  - name: Collectible
+    uniqueID: 2009936533
+    locked: 0
+  - name: Enemy
+    uniqueID: 3256494579
+    locked: 0
+  - name: Player
+    uniqueID: 915677243
+    locked: 0
+  - name: Climbable
+    uniqueID: 489073475
+    locked: 0
+  - name: Projectile
+    uniqueID: 2872636681
+    locked: 0
+  - name: VFX_Back
+    uniqueID: 3116271057
+    locked: 0
+  - name: UI_World
+    uniqueID: 1247132801
+    locked: 0
+  - name: VFX_Front
+    uniqueID: 1761874595
+    locked: 0
+  - name: UI
+    uniqueID: 141419465
+    locked: 0
+  m_RenderingLayers:
+  - Default
+  - Player
+  - Enemy
+  - Environment
+  - Collectible
+  - Interactable
+  - UI_World
+  - FX/Lighting
