@@ -1,0 +1,14 @@
+Library/
+Logs/
+Temp/
+Obj/
+Build/
+Builds/
+UserSettings/
+MemoryCaptures/
+.DS_Store
+.vs/
+*.csproj
+*.sln
+*.user
+*.unitypackage
