@@ -1,0 +1,13 @@
+[Ll]ibrary/
+[Pp]ackageCache/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+UserSettings/
+MemoryCaptures/
+.vs/
+*.csproj
+*.sln
+*.user
+*.unitypackage
