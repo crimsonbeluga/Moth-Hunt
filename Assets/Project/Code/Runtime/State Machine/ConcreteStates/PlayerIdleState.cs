@@ -1,33 +1,17 @@
-using UnityEngine;
-using MothHunt.Input;
-
+// States/PlayerIdleState.cs
 public class PlayerIdleState : PlayerState
 {
-    public PlayerIdleState(PlayerController controller, PlayerStateMachine stateMachine) : base(controller, stateMachine)
-    {
-
-
-    }
+    public PlayerIdleState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
 
     public override void EnterState()
     {
-        base.EnterState();
-
-
-    }
-
-    public override void ExitState()
-    {
-        base.ExitState();
-
-        
+      
     }
 
     public override void FrameUpdate()
     {
-        base.FrameUpdate();
-
-
        
     }
+
+    public override void ExitState() { }
 }

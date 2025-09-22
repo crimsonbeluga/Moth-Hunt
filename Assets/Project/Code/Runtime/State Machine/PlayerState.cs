@@ -1,24 +1,15 @@
-using UnityEngine;
-
-public class PlayerState 
+public class PlayerState
 {
-    protected PlayerController controller;
+    protected PlayerMotor motor;
     protected PlayerStateMachine stateMachine;
 
-
-    public PlayerState (PlayerController controller, PlayerStateMachine stateMachine)
+    public PlayerState(PlayerMotor motor, PlayerStateMachine stateMachine)
     {
-        this.controller = controller;
+        this.motor = motor;
         this.stateMachine = stateMachine;
     }
 
-    // To override within the states
     public virtual void EnterState() { }
     public virtual void ExitState() { }
-
-    //In video, but unknown if needed
     public virtual void FrameUpdate() { }
-
-
-
 }

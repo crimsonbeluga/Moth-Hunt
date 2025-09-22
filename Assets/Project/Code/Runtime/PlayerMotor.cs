@@ -1,243 +1,208 @@
 using UnityEngine;
-using MothHunt.Input; // only used if you flip useRouterInput on
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMotor : MonoBehaviour
 {
+    [Header("Axes")]
+    [Tooltip("If true, horizontal movement uses Z instead of X (for scenes where Z is left/right).")]
+    public bool useZForHorizontal = false;
+
     [Header("Speeds")]
-    public float walkSpeed = 4f;
-    public float sprintSpeed = 7f;
-    public float crouchSpeed = 2f;
-    public float glideHorizontalSpeed = 3f;
-    public float climbSpeed = 3f;
+    [Min(0f)] public float walkSpeed = 4f;
+    [Min(0f)] public float sprintSpeed = 7f;
+    [Min(0f)] public float crouchSpeed = 2f;
+    [Min(0f)] public float airMoveSpeed = 4f;        // horizontal cap while airborne
+    [Min(0f)] public float glideHorizontalSpeed = 3f;
+    [Min(0f)] public float climbSpeed = 3f;
 
     [Header("Jump / Gravity")]
-    public float jumpHeight = 2.2f;        // meters
-    public float normalGravity = -30f;     // negative
-    public float glideGravity = -6f;       // negative (weaker)
-    public float terminalFallSpeed = -40f; // negative
-    public float glideFallSpeed = -8f;     // negative
+    public float jumpHeight = 2.2f;                  // meters
+    public float normalGravity = -30f;               // negative
+    public float glideGravity = -6f;                 // negative
+    public float terminalFallSpeed = -40f;           // negative
+    public float glideFallSpeed = -8f;               // negative
 
-    [Header("Testing (optional)")]
-    public bool useRouterInput = false;    // enable to test without your FSM
+    [Header("Debug")]
+    public bool logInputs = false;
 
-    // --- internals ---
+    // --- Internals (the 3 knobs) ---
+    private float _desiredX;           // -1..1 input set by states each frame
+    private float _desiredY;           // -1..1 (used by climb only)
+    private float _curMaxSpeedX;       // set by state on Enter
+    private float _curGravity;         // set by state on Enter
+    private float _curTerminal;        // set by state on Enter
+
+    // Execution state
     private CharacterController _cc;
-    private Vector3 _velocity;             // our running velocity (x,y,z)
-    private float _inputX;                 // -1..1 (left/right)
-    private float _inputY;                 // -1..1 (up/down for climb)
+    private Vector3 _velocity;         // current velocity (x,y,z)
+    private bool _climbMode;           // disables gravity; uses _desiredY * climbSpeed
+    private bool _glideMode;           // affects gravity + horizontal cap
 
-    private float _maxSpeedX;              // current horizontal speed cap
-    private float _currentGravity;         // current gravity (negative)
-    private float _currentTerminal;        // current terminal fall (negative)
+    // Climbable target from triggers
+    private Climbable _climbCandidate;
+    public bool HasClimbCandidate => _climbCandidate != null;
+    public Climbable CurrentClimbable => _climbCandidate;
 
-    private bool _isGliding;
-    private bool _isClimbing;
-    private bool _isCrouching;
-    private bool _isSprinting;
+    // Public query for Brain (used to gate glide on descent)
+    public float VerticalSpeed => _velocity.y;
 
-    private void Awake()
+    void Awake()
     {
         _cc = GetComponent<CharacterController>();
-        BeginWalk();                       // default mode
+        Mode_Walk(); // default baseline
     }
 
-    private void Update()
+    void Update()
     {
-        if (useRouterInput)
-        {
-            _inputX = PlayerInputRouter.Move.x;
-            _inputY = PlayerInputRouter.Move.y; // used for climbing
-        }
-
         Tick(Time.deltaTime);
     }
 
-    // -------------------------------------------------
-    //                MAIN MOTOR LOOP
-    // -------------------------------------------------
     public void Tick(float dt)
     {
-        // --- Horizontal (X) ---
-        float targetX = _inputX * _maxSpeedX;
-        _velocity.x = targetX;
-
-        // --- Vertical (Y) ---
-        if (_isClimbing)
+        // Horizontal
+        float horiz = _desiredX * _curMaxSpeedX;
+        if (useZForHorizontal)
         {
-            // Climb ignores gravity; uses vertical input
-            _velocity.y = _inputY * climbSpeed;
+            _velocity.x = 0f;
+            _velocity.z = horiz;
+        }
+        else
+        {
+            _velocity.x = horiz;
+            _velocity.z = 0f;
+        }
+
+        // Vertical
+        if (_climbMode)
+        {
+            _velocity.y = _desiredY * climbSpeed;
         }
         else
         {
             if (_cc.isGrounded)
             {
-                if (_velocity.y < 0f)
-                {
-                    // small downward bias to keep grounded
-                    _velocity.y = -2f;
-                }
+                if (_velocity.y < 0f) _velocity.y = -2f; // stick to ground
             }
             else
             {
-                // gravity while in air
-                _velocity.y += _currentGravity * dt;
-                if (_velocity.y < _currentTerminal)
-                {
-                    _velocity.y = _currentTerminal;
-                }
+                _velocity.y += _curGravity * dt;
+                if (_velocity.y < _curTerminal) _velocity.y = _curTerminal;
             }
         }
 
-        // --- Apply movement ---
+        // Move
         Vector3 delta = _velocity * dt;
         _cc.Move(delta);
+
+        if (logInputs && Mathf.Abs(_desiredX) > 0.01f)
+            Debug.Log($"[Motor] desiredX={_desiredX} cap={_curMaxSpeedX} vel={_velocity}");
     }
 
-    // -------------------------------------------------
-    //               INPUT FROM FSM (per-frame)
-    // -------------------------------------------------
-    // Call this each frame from your FSM with your left/right axis.
-    public void SetMoveInput(float x)
+    // ---------------- 3 knobs (per-frame from states) ----------------
+    public void SetHorizontalInput(float x01) => _desiredX = Mathf.Clamp(x01, -1f, 1f);
+    public void SetVerticalClimbInput(float y01) => _desiredY = Mathf.Clamp(y01, -1f, 1f);
+    public void SetGravity(float gravity, float terminal) { _curGravity = gravity; _curTerminal = terminal; }
+
+    // ---------------- Mode setters (Enter/Exit in states) -------------
+    public void Mode_Walk()
     {
-        _inputX = Mathf.Clamp(x, -1f, 1f);
+        _climbMode = false; _glideMode = false;
+        _curMaxSpeedX = walkSpeed;
+        SetGravity(normalGravity, terminalFallSpeed);
     }
 
-    // For climb states (optional): call this each frame with both axes.
-    public void SetMoveInput(float x, float y)
+    public void Mode_Sprint()
     {
-        _inputX = Mathf.Clamp(x, -1f, 1f);
-        _inputY = Mathf.Clamp(y, -1f, 1f);
+        _climbMode = false; _glideMode = false;
+        _curMaxSpeedX = sprintSpeed;
+        SetGravity(normalGravity, terminalFallSpeed);
     }
 
-    // -------------------------------------------------
-    //               STATE ENTER/EXIT METHODS
-    // -------------------------------------------------
-    // WALK (enter)
-    public void BeginWalk()
+    public void Mode_Crouch()
     {
-        _isSprinting = false;
-        _isCrouching = false;
-        _isGliding = false;
-
-        _maxSpeedX = walkSpeed;
-        _currentGravity = normalGravity;
-        _currentTerminal = terminalFallSpeed;
+        _climbMode = false; _glideMode = false;
+        _curMaxSpeedX = crouchSpeed;
+        SetGravity(normalGravity, terminalFallSpeed);
+        // TODO: adjust collider size here later, if desired
     }
 
-    // SPRINT (enter)
-    public void BeginSprint()
+    public void Mode_AirMove()
     {
-        _isSprinting = true;
-        _isCrouching = false;
-        _isGliding = false;
-
-        _maxSpeedX = sprintSpeed;
-        _currentGravity = normalGravity;
-        _currentTerminal = terminalFallSpeed;
+        _climbMode = false; _glideMode = false;
+        _curMaxSpeedX = airMoveSpeed;  // horizontal cap in air
+        // Keep current gravity/terminal (normally normalGravity set by jump)
     }
 
-    // CROUCH (enter)
-    public void BeginCrouch()
-    {
-        _isCrouching = true;
-        _isSprinting = false;
-        _isGliding = false;
-
-        _maxSpeedX = crouchSpeed;
-        _currentGravity = normalGravity;
-        _currentTerminal = terminalFallSpeed;
-    }
-
-    // CROUCH (exit)
-    public void EndCrouch()
-    {
-        _isCrouching = false;
-        // choose where you go next; walk is a safe default
-        BeginWalk();
-    }
-
-    // GLIDE (enter) — only does something if airborne
-    public void BeginGlide()
+    public void Mode_Glide()
     {
         if (_cc.isGrounded) return;
-
-        _isGliding = true;
-        _maxSpeedX = glideHorizontalSpeed;
-        _currentGravity = glideGravity;
-        _currentTerminal = glideFallSpeed;
+        _climbMode = false; _glideMode = true;
+        _curMaxSpeedX = glideHorizontalSpeed;
+        SetGravity(glideGravity, glideFallSpeed);
     }
 
-    // GLIDE (exit)
-    public void EndGlide()
+    public void End_Glide()
     {
-        _isGliding = false;
-        _currentGravity = normalGravity;
-        _currentTerminal = terminalFallSpeed;
-
-        // pick a horizontal mode on exit; walk is safe
-        if (_isSprinting) _maxSpeedX = sprintSpeed;
-        else if (_isCrouching) _maxSpeedX = crouchSpeed;
-        else _maxSpeedX = walkSpeed;
+        _glideMode = false;
+        SetGravity(normalGravity, terminalFallSpeed);
     }
 
-    // CLIMB (enter)
-    public void BeginClimb()
+    public void Mode_Climb()
     {
-        _isClimbing = true;
-        _isGliding = false;
-        _velocity.y = 0f; // reset vertical to avoid snap
+        _glideMode = false;
+        _climbMode = true;
+        _velocity.y = 0f; // stabilize when attaching
     }
 
-    // CLIMB (exit)
-    public void EndClimb()
+    public void End_Climb()
     {
-        _isClimbing = false;
-        _currentGravity = normalGravity;
-        _currentTerminal = terminalFallSpeed;
+        _climbMode = false;
+        SetGravity(normalGravity, terminalFallSpeed);
+        _desiredY = 0f;
     }
 
-    // JUMP (one-shot)
-    public void RequestJump()
+    // ---------------- One-shots --------------------------------------
+    public void DoJump()
     {
-        if (_isClimbing)
-        {
-            EndClimb(); // optional: detach when jumping
-        }
+        if (_climbMode) End_Climb();
+        if (!_cc.isGrounded) return;
 
-        if (_cc.isGrounded == false) return;
-
-        // v = sqrt(2 * |g| * h)
         float jumpV = Mathf.Sqrt(Mathf.Abs(2f * normalGravity * jumpHeight));
         _velocity.y = jumpV;
 
-        _isGliding = false;
-        _currentGravity = normalGravity;
-        _currentTerminal = terminalFallSpeed;
+        _glideMode = false;
+        SetGravity(normalGravity, terminalFallSpeed);
     }
 
-    // Optional short-hop: call when jump button released while rising
-    public void CutJumpEarly()
+    public void CutJump()
     {
-        if (_velocity.y > 0f)
+        if (_velocity.y > 0f) _velocity.y *= 0.5f;
+    }
+
+    // ---------------- Climbable candidate from triggers --------------
+    public void SetClimbCandidate(Climbable c)
+    {
+        _climbCandidate = c;
+        Debug.Log($"[Motor] ClimbCandidate = {(_climbCandidate ? _climbCandidate.name : "null")}");
+    }
+    public void ClearClimbCandidate(Climbable c)
+    {
+        if (_climbCandidate == c)
         {
-            _velocity.y = _velocity.y * 0.5f;
+            _climbCandidate = null;
+            Debug.Log("[Motor] ClimbCandidate cleared");
         }
     }
 
-    // -------------------------------------------------
-    //               SMALL HELPERS / GETTERS
-    // -------------------------------------------------
-    public Vector3 GetVelocity() { return _velocity; }
-    public bool IsGrounded() { return _cc.isGrounded; }
-    public bool IsGliding() { return _isGliding; }
-    public bool IsClimbing() { return _isClimbing; }
-    public bool IsSprinting() { return _isSprinting; }
-    public bool IsCrouching() { return _isCrouching; }
 
-    // If your FSM wants to zero horizontal instantly (cutscenes etc.)
-    public void StopHorizontal()
+    // ---------------- Queries / helpers ------------------------------
+    public bool IsGrounded() => _cc.isGrounded;
+    public bool IsClimbing() => _climbMode;
+    public bool IsGliding() => _glideMode;
+
+    public void ZeroHorizontal()
     {
-        _velocity.x = 0f;
+        if (useZForHorizontal) _velocity.z = 0f;
+        else _velocity.x = 0f;
     }
 }
