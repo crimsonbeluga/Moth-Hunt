@@ -1,27 +1,24 @@
-using UnityEngine;
+using MothHunt.Input;
 
 public class PlayerWalkState : PlayerState
 {
-    public PlayerWalkState(PlayerController controller, PlayerStateMachine stateMachine) : base(controller, stateMachine)
-    {
-
-
-    }
+    public PlayerWalkState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
 
     public override void EnterState()
     {
-        base.EnterState();
-        Debug.Log("WALKING");
-    }
-
-    public override void ExitState()
-    {
-        base.ExitState();
+        motor.Mode_Walk();
+        motor.SetHorizontalInput(0f);
     }
 
     public override void FrameUpdate()
     {
-        base.FrameUpdate();
+        var mv = PlayerInputRouter.Move;   // expects "Move" action in your input map
+        motor.SetHorizontalInput(mv.x);    // set useZForHorizontal=true if your scene uses Z
+    }
+
+    public override void ExitState()
+    {
+        motor.SetHorizontalInput(0f);
+        motor.ZeroHorizontal();
     }
 }
-
