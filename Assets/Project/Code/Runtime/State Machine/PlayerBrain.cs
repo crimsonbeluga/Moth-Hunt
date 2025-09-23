@@ -19,12 +19,32 @@ public class PlayerBrain : MonoBehaviour
     private PlayerClimbState _climb;
     private PlayerAirState _air;
 
-    // Edge flags
+    // Edges (press once flags)
     private bool _jumpPressedThisFrame;
-    private bool _climbPressedThisFrame;   // NEW
+    private bool _climbPressedThisFrame;
 
-    private void OnJumpPressed() => _jumpPressedThisFrame = true;
-    private void OnClimbPressed() => _climbPressedThisFrame = true;   // NEW
+    // --- Glide-with-hold config ---
+    [Header("Glide (hold Space)")]
+    [Tooltip("How long Space must be held (since the most recent Jump press) before glide may start.")]
+    public float glideHoldThreshold = 0.08f;
+    [Tooltip("If true, you must be descending (vY <= 0) to enter glide.")]
+    public bool glideRequireDescent = true;
+
+    private float _lastJumpPressTime = -999f;
+
+    // ---------- DEBUG ----------
+    [Header("Debug")]
+    public bool logBrainFrames = true;
+    public bool logDecisions = true;
+    public bool logTransitions = true;
+
+    private string CurStateName => StateMachine?.CurrentPlayerState?.GetType().Name ?? "(null)";
+    private void DBG(string msg) { if (logBrainFrames || logDecisions || logTransitions) Debug.Log($"[Brain] {msg}"); }
+    private void DEC(string msg) { if (logDecisions) Debug.Log($"[Brain/DEC] {msg}"); }
+    private void TRN(string msg) { if (logTransitions) Debug.Log($"[Brain/TRN] {msg}"); }
+
+    private void OnJumpPressed() { _jumpPressedThisFrame = true; _lastJumpPressTime = Time.time; DEC($"Jump PRESSED at t={_lastJumpPressTime:F3}"); }
+    private void OnClimbPressed() { _climbPressedThisFrame = true; DEC("Climb PRESSED"); }
 
     private void Awake()
     {
@@ -35,7 +55,7 @@ public class PlayerBrain : MonoBehaviour
         _input.Player.Enable();
 
         PlayerInputRouter.OnJumpPressed += OnJumpPressed;
-        PlayerInputRouter.OnClimbPressed += OnClimbPressed;           // NEW
+        PlayerInputRouter.OnClimbPressed += OnClimbPressed;
 
         StateMachine = new PlayerStateMachine();
 
@@ -51,38 +71,100 @@ public class PlayerBrain : MonoBehaviour
 
     private void Start()
     {
+        TRN("Initialize -> Idle");
         StateMachine.Initialize(_idle);
+    }
+
+    private bool HoldQualifiesForGlide()
+    {
+        if (_motor.IsGrounded()) { DEC("Glide check: grounded."); return false; }
+
+        // must be holding Space (Jump)
+        if (!PlayerInputRouter.JumpHeld) { DEC("Glide check: JumpHeld=false."); return false; }
+
+        // hold time since last *press* must exceed threshold
+        float heldFor = Time.time - _lastJumpPressTime;
+        if (heldFor < glideHoldThreshold)
+        {
+            DEC($"Glide check: heldFor {heldFor:F3}s < threshold {glideHoldThreshold:F3}s.");
+            return false;
+        }
+
+        // optional descent requirement
+        if (glideRequireDescent && _motor.VerticalSpeed > 0f)
+        {
+            DEC($"Glide check: ascending vY={_motor.VerticalSpeed:F2} (require descent).");
+            return false;
+        }
+
+        DEC($"Glide check PASSED: JumpHeld=true, heldFor={heldFor:F3}s, vY={_motor.VerticalSpeed:F2}.");
+        return true;
     }
 
     private void Update()
     {
+        if (logBrainFrames)
+        {
+            DBG($"State={CurStateName} grounded={_motor.IsGrounded()} vY={_motor.VerticalSpeed:F2} " +
+                $"move={PlayerInputRouter.Move} IsMoving={PlayerInputRouter.IsMoving} " +
+                $"JumpHeld={PlayerInputRouter.JumpHeld}");
+        }
+
         StateMachine.CurrentPlayerState?.FrameUpdate();
 
         // ===== AIRBORNE transitions =====
         if (!_motor.IsGrounded())
         {
-            if (PlayerInputRouter.GlideHeld && !Is<PlayerGlideState>()) { StateMachine.ChangeState(_glide); return; }
-            if (!PlayerInputRouter.GlideHeld && Is<PlayerGlideState>()) { StateMachine.ChangeState(_air); return; }
+            DEC("Airborne block entered.");
+
+            // Enter Glide only if Space is being HELD long enough (our own threshold)
+            if (HoldQualifiesForGlide() && !Is<PlayerGlideState>())
+            {
+                TRN($"ChangeState -> Glide (from {CurStateName}) via HOLD.");
+                StateMachine.ChangeState(_glide);
+                return;
+            }
+
+            // Exit Glide as soon as Space is released
+            if (!PlayerInputRouter.JumpHeld && Is<PlayerGlideState>())
+            {
+                TRN("ChangeState -> Air (from Glide) because JumpHeld released.");
+                StateMachine.ChangeState(_air);
+                return;
+            }
+
+            // Default airborne fallback
             if (!Is<PlayerGlideState>() && !Is<PlayerJumpState>() && !Is<PlayerAirState>() && !Is<PlayerClimbState>())
-            { StateMachine.ChangeState(_air); return; }
+            {
+                TRN($"ChangeState -> Air (from {CurStateName}) fallback airborne.");
+                StateMachine.ChangeState(_air);
+                return;
+            }
+        }
+        else
+        {
+            DEC("Grounded: skipping airborne checks.");
         }
 
         // ===== CLIMB attach/detach =====
-        // Attach (press while in range & not already climbing)
         if (_climbPressedThisFrame)
         {
             _climbPressedThisFrame = false;
 
             if (!Is<PlayerClimbState>())
             {
-                // only attach if we have a candidate
-                if (_motor.HasClimbCandidate) { StateMachine.ChangeState(_climb); return; }
-
+                if (_motor.HasClimbCandidate)
+                {
+                    TRN($"ChangeState -> Climb (from {CurStateName}) because climb pressed & candidate.");
+                    StateMachine.ChangeState(_climb);
+                    return;
+                }
+                else DEC("Climb press ignored: no candidate.");
             }
             else
             {
-                // toggle OFF: detach and fall
-                StateMachine.ChangeState(_air);   // ExitState() on climb will call EndClimb() to restore gravity
+                TRN("Climb toggled off -> Air.");
+                StateMachine.ChangeState(_air);
                 return;
             }
         }
@@ -93,9 +175,11 @@ public class PlayerBrain : MonoBehaviour
             _jumpPressedThisFrame = false;
             if (_motor.IsGrounded() && (Is<PlayerIdleState>() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>()))
             {
+                TRN($"ChangeState -> Jump (from {CurStateName}) because jump pressed while grounded.");
                 StateMachine.ChangeState(_jump);
                 return;
             }
+            else DEC("Jump press ignored (not grounded or wrong state).");
         }
 
         // ===== GROUNDED locomotion =====
@@ -105,10 +189,10 @@ public class PlayerBrain : MonoBehaviour
 
         if (_motor.IsGrounded() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>())
         {
-            if (crouch && !Is<PlayerCrouchState>()) { StateMachine.ChangeState(_crouch); return; }
-            if (!crouch && hasMove && sprint && !Is<PlayerSprintState>()) { StateMachine.ChangeState(_sprint); return; }
-            if (!crouch && hasMove && !sprint && !Is<PlayerWalkState>()) { StateMachine.ChangeState(_walk); return; }
-            if (!hasMove && !crouch && !Is<PlayerIdleState>()) { StateMachine.ChangeState(_idle); return; }
+            if (crouch && !Is<PlayerCrouchState>()) { TRN($"-> Crouch (from {CurStateName})"); StateMachine.ChangeState(_crouch); return; }
+            if (!crouch && hasMove && sprint && !Is<PlayerSprintState>()) { TRN($"-> Sprint (from {CurStateName})"); StateMachine.ChangeState(_sprint); return; }
+            if (!crouch && hasMove && !sprint && !Is<PlayerWalkState>()) { TRN($"-> Walk (from {CurStateName})"); StateMachine.ChangeState(_walk); return; }
+            if (!hasMove && !crouch && !Is<PlayerIdleState>()) { TRN($"-> Idle (from {CurStateName})"); StateMachine.ChangeState(_idle); return; }
         }
     }
 
@@ -117,7 +201,8 @@ public class PlayerBrain : MonoBehaviour
     private void OnDisable()
     {
         PlayerInputRouter.OnJumpPressed -= OnJumpPressed;
-        PlayerInputRouter.OnClimbPressed -= OnClimbPressed;   // NEW
+        PlayerInputRouter.OnClimbPressed -= OnClimbPressed;
         _input?.Player.Disable();
+        DBG("OnDisable: input unbound and map disabled.");
     }
 }

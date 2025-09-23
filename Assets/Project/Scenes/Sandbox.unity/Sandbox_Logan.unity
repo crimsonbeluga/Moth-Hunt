@@ -867,7 +867,8 @@ PrefabInstance:
       propertyPath: jumpHeight
       value: 3
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5949876930019018513, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
@@ -876,10 +877,10 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3165486706134402212, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2142181415}
+      addedObject: {fileID: 2142181418}
     - targetCorrespondingSourceObject: {fileID: 3165486706134402212, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2142181419}
+      addedObject: {fileID: 2142181417}
   m_SourcePrefab: {fileID: 100100000, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
 --- !u!1 &1177647211
 GameObject:
@@ -1353,19 +1354,7 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
   m_PrefabInstance: {fileID: 1164432565}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2142181415
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2142181409}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a06840732d287174c98deeab319ae5e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerInputToMotorBridge
---- !u!114 &2142181419
+--- !u!114 &2142181417
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1377,6 +1366,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a493857551c6dd14dbb9cb0e153c2ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBrain
+  glideHoldThreshold: 0.08
+  glideRequireDescent: 1
+  logBrainFrames: 1
+  logDecisions: 1
+  logTransitions: 1
+--- !u!114 &2142181418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2142181409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ccf177716ba09f43afd9c9e95cdf8f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMotor
+  useZForHorizontal: 0
+  walkSpeed: 4
+  sprintSpeed: 7
+  crouchSpeed: 2
+  airMoveSpeed: 4
+  glideHorizontalSpeed: 3
+  climbSpeed: 3
+  jumpHeight: 2.2
+  normalGravity: -30
+  glideGravity: -6
+  terminalFallSpeed: -40
+  glideFallSpeed: -8
+  logFrames: 0
+  logTransitions: 1
+  logGravityChanges: 1
+  logInputs: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
