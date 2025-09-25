@@ -286,7 +286,7 @@ namespace MothHunt.Input                          // Project namespace to avoid 
             Look = Vector2.zero;                                     // Clear look vector
         }
 
-        // Jump: fire on key down; release on key up ó but skip release if Glide took over
+        // Jump: fire on key down; release on key up ÅEbut skip release if Glide took over
         private static void OnJumpStarted(InputAction.CallbackContext _)    // Jump press edge
         {
             JumpHeld = true;                                         // Mark jump as held
