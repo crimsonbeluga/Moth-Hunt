@@ -28,6 +28,7 @@ namespace MothHunt.Input                          // Project namespace to avoid 
         public static bool Inv1Held { get; private set; }        // True while inventory slot 1 held
         public static bool Inv2Held { get; private set; }        // True while inventory slot 2 held
         public static bool Inv3Held { get; private set; }        // True while inventory slot 3 held
+        public static bool DropChord => (Move.y <= -0.5f) || CrawlHeld;
 
         /// <summary>True while player intends an all-fours pose (sprint or crawl held).</summary>
         public static bool AllFoursIntent => SprintHeld || CrawlHeld;  // Derived convenience flag
