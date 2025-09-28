@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using MothHunt.Input;
 
 [RequireComponent(typeof(PlayerMotor))]
@@ -9,7 +9,6 @@ public class PlayerBrain : MonoBehaviour
     private PlayerMotor _motor;
     private MothHuntInput _input;
 
-    // States
     private PlayerIdleState _idle;
     private PlayerWalkState _walk;
     private PlayerSprintState _sprint;
@@ -19,20 +18,15 @@ public class PlayerBrain : MonoBehaviour
     private PlayerClimbState _climb;
     private PlayerAirState _air;
 
-    // Edges (press once flags)
     private bool _jumpPressedThisFrame;
     private bool _climbPressedThisFrame;
 
-    // --- Glide-with-hold config ---
     [Header("Glide (hold Space)")]
-    [Tooltip("How long Space must be held (since the most recent Jump press) before glide may start.")]
     public float glideHoldThreshold = 0.08f;
-    [Tooltip("If true, you must be descending (vY <= 0) to enter glide.")]
     public bool glideRequireDescent = true;
 
     private float _lastJumpPressTime = -999f;
 
-    // ---------- DEBUG ----------
     [Header("Debug")]
     public bool logBrainFrames = true;
     public bool logDecisions = true;
@@ -78,11 +72,8 @@ public class PlayerBrain : MonoBehaviour
     private bool HoldQualifiesForGlide()
     {
         if (_motor.IsGrounded()) { DEC("Glide check: grounded."); return false; }
-
-        // must be holding Space (Jump)
         if (!PlayerInputRouter.JumpHeld) { DEC("Glide check: JumpHeld=false."); return false; }
 
-        // hold time since last *press* must exceed threshold
         float heldFor = Time.time - _lastJumpPressTime;
         if (heldFor < glideHoldThreshold)
         {
@@ -90,14 +81,13 @@ public class PlayerBrain : MonoBehaviour
             return false;
         }
 
-        // optional descent requirement
         if (glideRequireDescent && _motor.VerticalSpeed > 0f)
         {
             DEC($"Glide check: ascending vY={_motor.VerticalSpeed:F2} (require descent).");
             return false;
         }
 
-        DEC($"Glide check PASSED: JumpHeld=true, heldFor={heldFor:F3}s, vY={_motor.VerticalSpeed:F2}.");
+        DEC($"Glide check PASSED: heldFor={heldFor:F3}s, vY={_motor.VerticalSpeed:F2}.");
         return true;
     }
 
@@ -105,10 +95,23 @@ public class PlayerBrain : MonoBehaviour
     {
         if (logBrainFrames)
         {
-            DBG($"State={CurStateName} grounded={_motor.IsGrounded()} vY={_motor.VerticalSpeed:F2} " +
-                $"move={PlayerInputRouter.Move} IsMoving={PlayerInputRouter.IsMoving} " +
-                $"JumpHeld={PlayerInputRouter.JumpHeld}");
+            DBG($"State={CurStateName} grounded={_motor.IsGrounded()} vY={_motor.VerticalSpeed:F2} move={PlayerInputRouter.Move} IsMoving={PlayerInputRouter.IsMoving} JumpHeld={PlayerInputRouter.JumpHeld}");
         }
+
+        // ----- OPTIONAL: auto-drop while holding Down (no Space needed) -----
+        /*
+        if (_motor.IsGrounded() && PlayerInputRouter.DropChord)
+        {
+            const float cooldown = 0.15f;
+            if (Time.time - _lastJumpPressTime > cooldown && _motor.TryDropThrough())
+            {
+                DEC("Auto-drop: DropChord while grounded (no Space).");
+                _lastJumpPressTime = Time.time;
+                return;
+            }
+        }
+        */
+        // -------------------------------------------------------------------
 
         StateMachine.CurrentPlayerState?.FrameUpdate();
 
@@ -117,7 +120,6 @@ public class PlayerBrain : MonoBehaviour
         {
             DEC("Airborne block entered.");
 
-            // Enter Glide only if Space is being HELD long enough (our own threshold)
             if (HoldQualifiesForGlide() && !Is<PlayerGlideState>())
             {
                 TRN($"ChangeState -> Glide (from {CurStateName}) via HOLD.");
@@ -125,7 +127,6 @@ public class PlayerBrain : MonoBehaviour
                 return;
             }
 
-            // Exit Glide as soon as Space is released
             if (!PlayerInputRouter.JumpHeld && Is<PlayerGlideState>())
             {
                 TRN("ChangeState -> Air (from Glide) because JumpHeld released.");
@@ -133,7 +134,6 @@ public class PlayerBrain : MonoBehaviour
                 return;
             }
 
-            // Default airborne fallback
             if (!Is<PlayerGlideState>() && !Is<PlayerJumpState>() && !Is<PlayerAirState>() && !Is<PlayerClimbState>())
             {
                 TRN($"ChangeState -> Air (from {CurStateName}) fallback airborne.");
@@ -169,10 +169,21 @@ public class PlayerBrain : MonoBehaviour
             }
         }
 
-        // ===== JUMP (edge) =====
+        // ===== JUMP / DROP (edge) =====
         if (_jumpPressedThisFrame)
         {
             _jumpPressedThisFrame = false;
+
+            // DEBUG: confirm chord and grounded state
+            DEC($"Jump edge: DropChord={PlayerInputRouter.DropChord}, grounded={_motor.IsGrounded()} move={PlayerInputRouter.Move}");
+
+            // Down+Jump (or Crawl+Jump) → Drop-through if possible
+            if (PlayerInputRouter.DropChord && _motor.TryDropThrough())
+            {
+                DEC("Jump edge became DROP (platform opened).");
+                return;
+            }
+
             if (_motor.IsGrounded() && (Is<PlayerIdleState>() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>()))
             {
                 TRN($"ChangeState -> Jump (from {CurStateName}) because jump pressed while grounded.");
