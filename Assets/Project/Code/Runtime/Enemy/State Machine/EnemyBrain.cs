@@ -1,11 +1,12 @@
 using UnityEngine;
 
+[RequireComponent(typeof(PlayerMotor))]
 public class EnemyBrain : MonoBehaviour
 {
     //Variables
     public EnemyStateMachine StateMachine { get; private set; }
 
-    //public EnemnyMotor _motor;
+    public EnemyMotor _motor;
 
 
     //States
@@ -16,20 +17,6 @@ public class EnemyBrain : MonoBehaviour
     private EnemyReturningState _returning;
 
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    //Debug (copied from PlayerBrain)
     [Header("Debug")]
     public bool logBrainFrames = true;
     public bool logDecisions = true;
@@ -39,5 +26,34 @@ public class EnemyBrain : MonoBehaviour
     private void DBG(string msg) { if (logBrainFrames || logDecisions || logTransitions) Debug.Log($"[Brain] {msg}"); }
     private void DEC(string msg) { if (logDecisions) Debug.Log($"[Brain/DEC] {msg}"); }
     private void TRN(string msg) { if (logTransitions) Debug.Log($"[Brain/TRN] {msg}"); }
+
+    private void Awake()
+    {
+        _motor = GetComponent<EnemyMotor>();
+
+
+
+    }
+
+
+    void Start()
+    {
+        TRN("Initialize -> Idle");
+        StateMachine.Initialize(_idle);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        StateMachine.CurrentEnemyState?.FrameUpdate();
+
+    }
+    
+    //Unknown purpose to Shan
+    private bool Is<T>() where T : EnemyState => StateMachine.CurrentEnemyState is T;
+    
+
+
+
 
 }
