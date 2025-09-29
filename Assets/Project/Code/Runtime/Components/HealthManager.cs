@@ -82,7 +82,7 @@ public abstract class HealthManager : MonoBehaviour
 
     public virtual void TakeDamage(float damage)
     {
-        if (damage <= 0f) return;
+        if (damage <= 0f) return; // Ignore non-positive damage values
         CurrentHealth -= damage; // Death is handled in the setter of CurrentHealth
         HurtEffect();
         CurrentRegenDelay = regenDelay; // Reset regen delay
@@ -90,7 +90,7 @@ public abstract class HealthManager : MonoBehaviour
 
     public virtual void TakeHeal(float amount)
     {
-        if (amount <= 0f) return;
+        if (amount <= 0f) return; // Ignore non-positive heal values
         CurrentHealth += amount; // Healing beyond maxHealth is clamped in the setter of CurrentHealth
         HealEffect();
     }
