@@ -133,16 +133,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MothHunt.Movement.PlayerMotor
   useZForHorizontal: 0
-  walkSpeed: 4
-  sprintSpeed: 7
-  crouchSpeed: 2
-  airMoveSpeed: 4
-  glideHorizontalSpeed: 3
-  climbSpeed: 3
-  jumpHeight: 2.2
-  normalGravity: -30
-  glideGravity: -6
-  terminalFallSpeed: -40
+  walkSpeed: 5
+  sprintSpeed: 10
+  crouchSpeed: 2.5
+  airMoveSpeed: 5
+  glideHorizontalSpeed: 3.75
+  climbSpeed: 4
+  jumpHeight: 3.75
+  normalGravity: -25
+  glideGravity: -2
+  terminalFallSpeed: -30
   glideFallSpeed: -8
   logFrames: 0
   logTransitions: 1
