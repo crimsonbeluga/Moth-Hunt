@@ -557,7 +557,7 @@ Transform:
   m_GameObject: {fileID: 545190421}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -674,7 +674,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1443652061
+--- !u!1001 &1350056759
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -684,11 +684,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -9.61
+      value: -15.661538
       objectReference: {fileID: 0}
     - target: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: m_LocalPosition.z
@@ -727,12 +727,14 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 5949876930019018513, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
-      propertyPath: useZForHorizontal
-      value: 0
+      propertyPath: jumpHeight
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
 --- !u!1 &2081733096
 GameObject:
   m_ObjectHideFlags: 0
@@ -971,7 +973,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
-
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -983,4 +984,4 @@ SceneRoots:
   - {fileID: 545190425}
   - {fileID: 314361614}
   - {fileID: 504550962}
-
+  - {fileID: 1350056759}
