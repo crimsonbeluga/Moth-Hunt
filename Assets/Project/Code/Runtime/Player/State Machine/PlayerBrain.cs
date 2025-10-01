@@ -205,6 +205,8 @@ public class PlayerBrain : MonoBehaviour
             if (!crouch && hasMove && !sprint && !Is<PlayerWalkState>()) { TRN($"-> Walk (from {CurStateName})"); StateMachine.ChangeState(_walk); return; }
             if (!hasMove && !crouch && !Is<PlayerIdleState>()) { TRN($"-> Idle (from {CurStateName})"); StateMachine.ChangeState(_idle); return; }
         }
+
+       
     }
 
     private bool Is<T>() where T : PlayerState => StateMachine.CurrentPlayerState is T;

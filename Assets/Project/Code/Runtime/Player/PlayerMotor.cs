@@ -15,6 +15,18 @@ public class PlayerMotor : MonoBehaviour
     [Min(0f)] public float glideHorizontalSpeed = 3f;
     [Min(0f)] public float climbSpeed = 3f;
 
+    [Header("Sprint Momentum (speed-based)")]
+    [Tooltip("Time (s) to build momentum upward while truly sprinting on ground.")]
+    public float momentumRiseTime = 0.35f;
+    [Tooltip("Time (s) to decay momentum when not truly sprinting.")]
+    public float momentumFallTime = 0.60f;
+    [Tooltip("Seconds after jump to ramp airMoveSpeed from walk to momentum-based target (used by Jump).")]
+    public float airSpeedRampTime = 0.20f;
+
+    [SerializeField, Range(0f, 1f)]
+    private float _sprintMomentum; // 0..1, persistent
+    public float SprintMomentum => _sprintMomentum;
+
     [Header("Jump / Gravity")]
     public float jumpHeight = 2.2f;
     public float normalGravity = -30f;
@@ -44,6 +56,8 @@ public class PlayerMotor : MonoBehaviour
     public Climbable CurrentClimbable => _climbCandidate;
 
     public float VerticalSpeed => _velocity.y;
+    /// <summary>Absolute planar speed the motor is currently applying this frame.</summary>
+    public float CurrentPlanarSpeed => Mathf.Abs(useZForHorizontal ? _velocity.z : _velocity.x);
 
     void Awake()
     {
@@ -58,11 +72,13 @@ public class PlayerMotor : MonoBehaviour
     {
         if (logFrames) Debug.Log($"[Motor] Tick START dt={dt:F4}  {DumpState()}");
 
+        // Horizontal intent -> velocity under current cap
         float horiz = _desiredX * _curMaxSpeedX;
         if (useZForHorizontal) { _velocity.x = 0f; _velocity.z = horiz; }
         else { _velocity.x = horiz; _velocity.z = 0f; }
         if (logInputs) Debug.Log($"[Motor] HORIZ desiredX={_desiredX:F2} cap={_curMaxSpeedX:F2} -> vel=({_velocity.x:F2},{_velocity.z:F2})");
 
+        // Vertical/gravity handling
         float beforeY = _velocity.y;
         if (_climbMode)
         {
@@ -73,7 +89,7 @@ public class PlayerMotor : MonoBehaviour
         {
             if (_cc.isGrounded)
             {
-                if (_velocity.y < 0f) _velocity.y = -2f;
+                if (_velocity.y < 0f) _velocity.y = -2f; // small stick-to-ground bias
                 if (_glideMode) { _glideMode = false; if (logTransitions) Debug.Log("[Motor] Glide auto-ended because grounded."); }
                 if (_curGravity != normalGravity || _curTerminal != terminalFallSpeed)
                 {
@@ -91,11 +107,118 @@ public class PlayerMotor : MonoBehaviour
             }
         }
 
+        // Move
         Vector3 delta = _velocity * dt;
         CollisionFlags flags = _cc.Move(delta);
+
         if (logFrames) Debug.Log($"[Motor] Move delta={delta} flags={flags} grounded={_cc.isGrounded}");
+        // ==== HEAD-BUMP: cancel upward motion immediately ====
+        if ((flags & CollisionFlags.Above) != 0 && _velocity.y > 0f)
+        {
+            // Kill upward velocity and start falling now
+            _velocity.y = -2f; // small downward bias so we don't re-stick to the ceiling
+
+            // If you were gliding (unlikely on a jump bump), end it so gravity is normal
+            if (_glideMode)
+            {
+                _glideMode = false;
+                SetGravity(normalGravity, terminalFallSpeed, "HeadBump");
+            }
+
+            if (logTransitions) Debug.Log("[Motor] Head bump -> cancel jump, start falling.");
+        }
+        // === Momentum update (never builds in air/walk; only on true ground sprint) ===
+        TickSprintMomentumBySpeed(dt);
+
+        // === NEW: when grounded, keep airMoveSpeed in sync so future airborne cap is correct ===
+        if (_cc.isGrounded)
+            SyncAirMoveSpeedWhileGrounded();
 
         if (logFrames) Debug.Log($"[Motor] Tick END   {DumpState()}");
+    }
+
+    // -------- Momentum (speed-based, persistent) --------
+
+    /// <summary>
+    /// True if we should be allowed to BUILD momentum this frame:
+    /// - On ground
+    /// - Actually moving
+    /// - Current cap equals sprint speed (proxy for being in Sprint state)
+    /// </summary>
+    private bool CanBuildMomentum()
+    {
+        bool moving = Mathf.Abs(_desiredX) > 0.05f;
+        bool sprintCap = _curMaxSpeedX >= sprintSpeed * 0.98f; // cheap proxy for Sprint mode
+        return _cc.isGrounded && moving && sprintCap;
+    }
+
+    /// <summary>
+    /// Move sprint momentum toward a target ratio under clear rules:
+    /// - If truly sprinting on ground: rise toward current speed ratio (>= walkRatio).
+    /// - Else if moving (walk/crouch or in air): decay toward walkRatio (to keep air at walk).
+    /// - Else (idle): decay toward 0.
+    /// </summary>
+    public void TickSprintMomentumBySpeed(float dt)
+    {
+        float denom = Mathf.Max(0.0001f, sprintSpeed);
+        float speedRatio = Mathf.Clamp01(CurrentPlanarSpeed / denom);
+        float walkRatio = Mathf.Clamp01(walkSpeed / denom);
+
+        float rise = Mathf.Max(0.0001f, momentumRiseTime);
+        float fall = Mathf.Max(0.0001f, momentumFallTime);
+
+        bool moving = Mathf.Abs(_desiredX) > 0.05f;
+        bool build = CanBuildMomentum();
+
+        float target;
+        if (build)
+        {
+            // Only build toward actual speed ratio, but never below walkRatio while sprinting.
+            target = Mathf.Max(walkRatio, speedRatio);
+        }
+        else
+        {
+            // Not truly sprinting:
+            // - if still moving, momentum should sit at walk level
+            // - if idle, momentum decays toward 0
+            target = moving ? walkRatio : 0f;
+
+            // Hard cap: when not building, never exceed walk-level momentum
+            if (_sprintMomentum > walkRatio)
+                _sprintMomentum = Mathf.Max(walkRatio, _sprintMomentum - (dt / fall));
+        }
+
+        // Approach target
+        if (_sprintMomentum < target)
+            _sprintMomentum = Mathf.Min(target, _sprintMomentum + (dt / rise));
+        else if (_sprintMomentum > target)
+            _sprintMomentum = Mathf.Max(target, _sprintMomentum - (dt / fall));
+    }
+
+    /// <summary>
+    /// When grounded, precompute the "next air" cap:
+    /// - If truly sprinting (building) -> airMoveSpeed tracks momentum (up to sprint)
+    /// - Otherwise -> force walk, so walking/idle resets future air cap
+    /// </summary>
+    private void SyncAirMoveSpeedWhileGrounded()
+    {
+        if (_climbMode || _glideMode) return;
+
+        if (CanBuildMomentum())
+        {
+            airMoveSpeed = Mathf.Lerp(walkSpeed, sprintSpeed, _sprintMomentum);
+        }
+        else
+        {
+            airMoveSpeed = walkSpeed; // critical: clears stale "10" after landing or when walking
+        }
+    }
+
+    /// <summary>While airborne (not climbing/gliding), keep CC horizontal cap synced to airMoveSpeed.</summary>
+    public void ApplyAirMoveCap()
+    {
+        if (!_climbMode && !_glideMode)
+            _curMaxSpeedX = airMoveSpeed;
     }
 
     // -------- Knobs --------
@@ -105,10 +228,11 @@ public class PlayerMotor : MonoBehaviour
     { if (logGravityChanges) Debug.Log($"[Motor] SetGravity by '{caller}'  g:{_curGravity:F2}→{g:F2}  term:{_curTerminal:F2}→{term:F2}"); _curGravity = g; _curTerminal = term; }
 
     // -------- Modes --------
-    public void Mode_Walk() { _climbMode = false; _glideMode = false; _curMaxSpeedX = walkSpeed; SetGravity(normalGravity, terminalFallSpeed); if (logTransitions) Debug.Log($"[Motor] Mode_Walk -> {DumpState()}"); }
-    public void Mode_Sprint() { _climbMode = false; _glideMode = false; _curMaxSpeedX = sprintSpeed; SetGravity(normalGravity, terminalFallSpeed); if (logTransitions) Debug.Log($"[Motor] Mode_Sprint -> {DumpState()}"); }
-    public void Mode_Crouch() { _climbMode = false; _glideMode = false; _curMaxSpeedX = crouchSpeed; SetGravity(normalGravity, terminalFallSpeed); if (logTransitions) Debug.Log($"[Motor] Mode_Crouch -> {DumpState()}"); }
+    public void Mode_Walk() { _climbMode = false; _glideMode = false; _curMaxSpeedX = walkSpeed; SetGravity(normalGravity, terminalFallSpeed); airMoveSpeed = walkSpeed; if (logTransitions) Debug.Log($"[Motor] Mode_Walk -> {DumpState()}"); }
+    public void Mode_Sprint() { _climbMode = false; _glideMode = false; _curMaxSpeedX = sprintSpeed; SetGravity(normalGravity, terminalFallSpeed); /* airMoveSpeed will track via Sync */ if (logTransitions) Debug.Log($"[Motor] Mode_Sprint -> {DumpState()}"); }
+    public void Mode_Crouch() { _climbMode = false; _glideMode = false; _curMaxSpeedX = crouchSpeed; SetGravity(normalGravity, terminalFallSpeed); airMoveSpeed = walkSpeed; if (logTransitions) Debug.Log($"[Motor] Mode_Crouch -> {DumpState()}"); }
     public void Mode_AirMove() { _climbMode = false; _glideMode = false; _curMaxSpeedX = airMoveSpeed; if (logTransitions) Debug.Log($"[Motor] Mode_AirMove -> {DumpState()}"); }
+
     public void Mode_Glide()
     {
         if (_cc.isGrounded) { if (logTransitions) Debug.Log("[Motor] Mode_Glide requested but grounded."); return; }
@@ -156,7 +280,12 @@ public class PlayerMotor : MonoBehaviour
         }
     }
 
-    public void CutJump() { float beforeY = _velocity.y; if (_velocity.y > 0f) _velocity.y *= 0.5f; if (logTransitions) Debug.Log($"[Motor] CutJump {beforeY:F2}→{_velocity.y:F2}"); }
+    public void CutJump()
+    {
+        float beforeY = _velocity.y;
+        if (_velocity.y > 0f) _velocity.y *= 0.5f;
+        if (logTransitions) Debug.Log($"[Motor] CutJump {beforeY:F2}→{_velocity.y:F2}");
+    }
 
     // -------- Drop-through (robust) --------
     public bool TryDropThrough(float duration = 0.30f)
@@ -236,7 +365,13 @@ public class PlayerMotor : MonoBehaviour
     public bool IsGrounded() => _cc.isGrounded;
     public bool IsClimbing() => _climbMode;
     public bool IsGliding() => _glideMode;
-    public void ZeroHorizontal() { if (useZForHorizontal) _velocity.z = 0f; else _velocity.x = 0f; if (logInputs) Debug.Log("[Motor] ZeroHorizontal"); }
+
+    public void ZeroHorizontal()
+    {
+        if (useZForHorizontal) _velocity.z = 0f;
+        else _velocity.x = 0f;
+        if (logInputs) Debug.Log("[Motor] ZeroHorizontal");
+    }
 
     private string DumpState()
     {
