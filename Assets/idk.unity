@@ -174,8 +174,47 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3165486706134402212, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 739911621}
+    - targetCorrespondingSourceObject: {fileID: 3165486706134402212, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 739911620}
   m_SourcePrefab: {fileID: 100100000, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+--- !u!1 &739911619 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3165486706134402212, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+  m_PrefabInstance: {fileID: 739911618}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &739911620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739911619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1386524ba1d3a85498e81defe8652471, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeathManager
+--- !u!114 &739911621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739911619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81d25b616eee3984aa6108ac358eae15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealthManager
+  maxHealth: 100
+  regenRate: 1
+  regenDelay: 5
+  deathManager: {fileID: 739911620}
 --- !u!1 &935966401
 GameObject:
   m_ObjectHideFlags: 0
