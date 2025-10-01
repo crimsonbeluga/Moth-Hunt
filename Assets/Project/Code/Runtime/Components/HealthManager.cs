@@ -1,7 +1,11 @@
+using Unity.Collections;
 using UnityEngine;
 
 public abstract class HealthManager : MonoBehaviour
 {
+    [Header("Dependencies")]
+    [Tooltip("Reference to the DeathManager component that handles death logic")]
+    public DeathManager deathManager;
 
     [Header("Health")]
     [Min(0f)] public float maxHealth = 100f;
@@ -12,7 +16,7 @@ public abstract class HealthManager : MonoBehaviour
     [Tooltip("How many seconds after taking damage for regen begins")]
     [Min(0f)] public float regenDelay = 5f;
 
-    public DeathManager deathManager;
+
 
     // Internal
     protected float _currentHealth;
@@ -24,6 +28,7 @@ public abstract class HealthManager : MonoBehaviour
 
     void Start()
     {
+
         // Make sure DeathManager is assigned
         if (deathManager == null)
         {
@@ -55,6 +60,7 @@ public abstract class HealthManager : MonoBehaviour
         set
         {
             _currentHealth = Mathf.Clamp(value, 0f, maxHealth);
+            Debug.Log("Current Health: " + _currentHealth);
 
             if (_currentHealth <= 0f)
             {

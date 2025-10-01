@@ -2,21 +2,7 @@ using UnityEngine;
 
 public class PlayerHealthManager : HealthManager
 {
-    
-
-
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        print(_currentHealth);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Adding a Start() & Update() method would override the base class methods, so we don't add them here
 
     public override void HurtEffect()
     {
