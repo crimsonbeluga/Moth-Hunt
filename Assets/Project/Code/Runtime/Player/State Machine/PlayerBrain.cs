@@ -32,6 +32,13 @@ public class PlayerBrain : MonoBehaviour
     public bool logDecisions = true;
     public bool logTransitions = true;
 
+    [Header("Locomotion smoothing")]
+    public float moveDeadzone = 0.06f;       // ignore micro inputs around 0
+    public float idleEnterDelay = 0.08f;     // must be still for this long before Idle
+    public float idleSpeedThreshold = 0.05f; // also be basically not moving
+
+    private float _lastNonZeroMoveTime = -999f;
+
     private string CurStateName => StateMachine?.CurrentPlayerState?.GetType().Name ?? "(null)";
     private void DBG(string msg) { if (logBrainFrames || logDecisions || logTransitions) Debug.Log($"[Brain] {msg}"); }
     private void DEC(string msg) { if (logDecisions) Debug.Log($"[Brain/DEC] {msg}"); }
@@ -40,9 +47,12 @@ public class PlayerBrain : MonoBehaviour
     private void OnJumpPressed() { _jumpPressedThisFrame = true; _lastJumpPressTime = Time.time; DEC($"Jump PRESSED at t={_lastJumpPressTime:F3}"); }
     private void OnClimbPressed() { _climbPressedThisFrame = true; DEC("Climb PRESSED"); }
 
+    private PlayerAnimator _anim;
+
     private void Awake()
     {
         _motor = GetComponent<PlayerMotor>();
+        _anim = GetComponent<PlayerAnimator>(); // Animator wrapper driven by states
 
         _input = new MothHuntInput();
         PlayerInputRouter.Bind(_input.Player);
@@ -53,14 +63,14 @@ public class PlayerBrain : MonoBehaviour
 
         StateMachine = new PlayerStateMachine();
 
-        _idle = new PlayerIdleState(_motor, StateMachine);
-        _walk = new PlayerWalkState(_motor, StateMachine);
-        _sprint = new PlayerSprintState(_motor, StateMachine);
-        _crouch = new PlayerCrouchState(_motor, StateMachine);
-        _jump = new PlayerJumpState(_motor, StateMachine);
-        _glide = new PlayerGlideState(_motor, StateMachine);
-        _climb = new PlayerClimbState(_motor, StateMachine);
-        _air = new PlayerAirState(_motor, StateMachine);
+        _idle = new PlayerIdleState(_motor, StateMachine, _anim);
+        _walk = new PlayerWalkState(_motor, StateMachine, _anim);
+        _sprint = new PlayerSprintState(_motor, StateMachine, _anim);
+        _crouch = new PlayerCrouchState(_motor, StateMachine, _anim);
+        _jump = new PlayerJumpState(_motor, StateMachine, _anim);
+        _glide = new PlayerGlideState(_motor, StateMachine, _anim);
+        _climb = new PlayerClimbState(_motor, StateMachine, _anim);
+        _air = new PlayerAirState(_motor, StateMachine, _anim);
     }
 
     private void Start()
@@ -98,20 +108,11 @@ public class PlayerBrain : MonoBehaviour
             DBG($"State={CurStateName} grounded={_motor.IsGrounded()} vY={_motor.VerticalSpeed:F2} move={PlayerInputRouter.Move} IsMoving={PlayerInputRouter.IsMoving} JumpHeld={PlayerInputRouter.JumpHeld}");
         }
 
-        // ----- OPTIONAL: auto-drop while holding Down (no Space needed) -----
-        /*
-        if (_motor.IsGrounded() && PlayerInputRouter.DropChord)
-        {
-            const float cooldown = 0.15f;
-            if (Time.time - _lastJumpPressTime > cooldown && _motor.TryDropThrough())
-            {
-                DEC("Auto-drop: DropChord while grounded (no Space).");
-                _lastJumpPressTime = Time.time;
-                return;
-            }
-        }
-        */
-        // -------------------------------------------------------------------
+        // Track whether input is meaningfully moving this frame (deadzone aware)
+        var mvNow = PlayerInputRouter.Move;
+        bool inputMoving = Mathf.Abs(mvNow.x) > moveDeadzone;
+        if (inputMoving)
+            _lastNonZeroMoveTime = Time.time;
 
         StateMachine.CurrentPlayerState?.FrameUpdate();
 
@@ -174,10 +175,8 @@ public class PlayerBrain : MonoBehaviour
         {
             _jumpPressedThisFrame = false;
 
-            // DEBUG: confirm chord and grounded state
             DEC($"Jump edge: DropChord={PlayerInputRouter.DropChord}, grounded={_motor.IsGrounded()} move={PlayerInputRouter.Move}");
 
-            // Down+Jump (or Crawl+Jump) → Drop-through if possible
             if (PlayerInputRouter.DropChord && _motor.TryDropThrough())
             {
                 DEC("Jump edge became DROP (platform opened).");
@@ -194,19 +193,24 @@ public class PlayerBrain : MonoBehaviour
         }
 
         // ===== GROUNDED locomotion =====
-        bool hasMove = PlayerInputRouter.IsMoving;
         bool sprint = PlayerInputRouter.SprintHeld;
         bool crouch = PlayerInputRouter.CrawlHeld;
+
+        // Use deadzone-aware intent for movement
+        bool hasMove = inputMoving;
+
+        // Only allow Idle if we've been still long enough AND we are basically not moving
+        bool readyToIdle = !hasMove
+                           && (Time.time - _lastNonZeroMoveTime) > idleEnterDelay
+                           && _motor.CurrentPlanarSpeed < idleSpeedThreshold;
 
         if (_motor.IsGrounded() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>())
         {
             if (crouch && !Is<PlayerCrouchState>()) { TRN($"-> Crouch (from {CurStateName})"); StateMachine.ChangeState(_crouch); return; }
             if (!crouch && hasMove && sprint && !Is<PlayerSprintState>()) { TRN($"-> Sprint (from {CurStateName})"); StateMachine.ChangeState(_sprint); return; }
             if (!crouch && hasMove && !sprint && !Is<PlayerWalkState>()) { TRN($"-> Walk (from {CurStateName})"); StateMachine.ChangeState(_walk); return; }
-            if (!hasMove && !crouch && !Is<PlayerIdleState>()) { TRN($"-> Idle (from {CurStateName})"); StateMachine.ChangeState(_idle); return; }
+            if (readyToIdle && !Is<PlayerIdleState>()) { TRN($"-> Idle (from {CurStateName})"); StateMachine.ChangeState(_idle); return; }
         }
-
-       
     }
 
     private bool Is<T>() where T : PlayerState => StateMachine.CurrentPlayerState is T;

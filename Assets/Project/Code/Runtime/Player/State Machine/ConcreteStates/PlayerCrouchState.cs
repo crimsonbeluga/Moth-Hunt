@@ -2,12 +2,13 @@ using MothHunt.Input;
 
 public class PlayerCrouchState : PlayerState
 {
-    public PlayerCrouchState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
+    public PlayerCrouchState(PlayerMotor motor, PlayerStateMachine sm, PlayerAnimator anim) : base(motor, sm, anim) { }
 
     public override void EnterState()
     {
         motor.Mode_Crouch();
         motor.SetHorizontalInput(0f);
+        anim.PlayCrouch();
     }
 
     public override void FrameUpdate()

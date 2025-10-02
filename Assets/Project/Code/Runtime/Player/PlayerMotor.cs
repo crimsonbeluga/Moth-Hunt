@@ -40,6 +40,13 @@ public class PlayerMotor : MonoBehaviour
     public bool logGravityChanges = true;
     public bool logInputs = false;
 
+    [Header("Visual")]
+    private SpriteRenderer _spriteRenderer;
+
+    // -1 = facing left (default), +1 = facing right
+    private int _faceDir = -1;
+
+
     private float _desiredX;
     private float _desiredY;
     private float _curMaxSpeedX;
@@ -62,6 +69,7 @@ public class PlayerMotor : MonoBehaviour
     void Awake()
     {
         _cc = GetComponent<CharacterController>();
+        _spriteRenderer = GetComponent<SpriteRenderer>(); // same object
         Mode_Walk();
         Debug.Log($"[Motor] Awake -> {DumpState()}");
     }
@@ -222,7 +230,27 @@ public class PlayerMotor : MonoBehaviour
     }
 
     // -------- Knobs --------
-    public void SetHorizontalInput(float x01) { _desiredX = Mathf.Clamp(x01, -1f, 1f); if (logInputs) Debug.Log($"[Motor] SetHorizontalInput -> {_desiredX:F2}"); }
+    public void SetHorizontalInput(float x01)
+    {
+        _desiredX = Mathf.Clamp(x01, -1f, 1f);
+        if (logInputs) Debug.Log($"[Motor] SetHorizontalInput -> {_desiredX:F2}");
+
+        // flip sprite based on input
+        if (_spriteRenderer)
+        {
+            if (_desiredX > 0.05f)      // moving right
+            {
+                _spriteRenderer.flipX = true;
+                _faceDir = +1;
+            }
+            else if (_desiredX < -0.05f) // moving left
+            {
+                _spriteRenderer.flipX = false;
+                _faceDir = -1;
+            }
+            // if idle, do nothing — keep last facing
+        }
+    }
     public void SetVerticalClimbInput(float y01) { _desiredY = Mathf.Clamp(y01, -1f, 1f); if (logInputs) Debug.Log($"[Motor] SetVerticalClimbInput -> {_desiredY:F2}"); }
     public void SetGravity(float g, float term, [CallerMemberName] string caller = null)
     { if (logGravityChanges) Debug.Log($"[Motor] SetGravity by '{caller}'  g:{_curGravity:F2}→{g:F2}  term:{_curTerminal:F2}→{term:F2}"); _curGravity = g; _curTerminal = term; }

@@ -2,12 +2,13 @@ using MothHunt.Input;
 
 public class PlayerWalkState : PlayerState
 {
-    public PlayerWalkState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
+    public PlayerWalkState(PlayerMotor motor, PlayerStateMachine sm, PlayerAnimator anim) : base(motor, sm, anim) { }
 
     public override void EnterState()
     {
         motor.Mode_Walk();
         motor.SetHorizontalInput(0f);
+        anim.PlayWalk();
     }
 
     public override void FrameUpdate()

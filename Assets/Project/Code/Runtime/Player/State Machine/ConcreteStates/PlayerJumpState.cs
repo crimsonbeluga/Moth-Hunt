@@ -8,7 +8,7 @@ public class PlayerJumpState : PlayerState
     private float _targetAirSpeed;
     private float _startAirSpeed;
 
-    public PlayerJumpState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
+    public PlayerJumpState(PlayerMotor motor, PlayerStateMachine sm, PlayerAnimator anim) : base(motor, sm, anim) { }
 
     public override void EnterState()
     {
@@ -24,6 +24,9 @@ public class PlayerJumpState : PlayerState
         _rampDuration = Mathf.Max(0.0001f, motor.airSpeedRampTime);
 
         motor.SetHorizontalInput(0f);
+
+        anim.PlayJump();
+
     }
 
     public override void FrameUpdate()

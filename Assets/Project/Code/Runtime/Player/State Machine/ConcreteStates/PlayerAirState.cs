@@ -5,11 +5,12 @@ public class PlayerAirState : PlayerState
 {
     private float _smoothVel;
 
-    public PlayerAirState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
+    public PlayerAirState(PlayerMotor motor, PlayerStateMachine sm, PlayerAnimator anim) : base(motor, sm, anim) { }
 
     public override void EnterState()
     {
         motor.Mode_AirMove();
+        anim.PlayAir();
     }
 
     public override void FrameUpdate()

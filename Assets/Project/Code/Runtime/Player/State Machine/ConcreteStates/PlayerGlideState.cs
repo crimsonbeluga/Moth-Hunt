@@ -3,10 +3,11 @@ using UnityEngine;
 
 public class PlayerGlideState : PlayerState
 {
-    public PlayerGlideState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
+    public PlayerGlideState(PlayerMotor motor, PlayerStateMachine sm, PlayerAnimator anim) : base(motor, sm, anim) { }
 
     public override void EnterState()
     {
+        anim.PlayGlide();
         Debug.Log("[GlideState] EnterState -> calling Mode_Glide()");
         motor.Mode_Glide();            // weak gravity + glide terminal
         motor.SetHorizontalInput(0f);

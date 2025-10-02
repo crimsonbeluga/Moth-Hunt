@@ -2,11 +2,12 @@ using MothHunt.Input;
 
 public class PlayerClimbState : PlayerState
 {
-    public PlayerClimbState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
+    public PlayerClimbState(PlayerMotor motor, PlayerStateMachine sm, PlayerAnimator anim) : base(motor, sm, anim) { }
 
     public override void EnterState()
     {
-        motor.Mode_Climb();              // zero vertical, disable gravity
+        motor.Mode_Climb();           // zero vertical, disable gravity
+        anim.PlayClimb();
     }
 
     public override void FrameUpdate()
