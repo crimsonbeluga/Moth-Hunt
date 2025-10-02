@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿// PlayerBrain.cs
+using UnityEngine;
 using MothHunt.Input;
 
 [RequireComponent(typeof(PlayerMotor))]
@@ -77,6 +78,14 @@ public class PlayerBrain : MonoBehaviour
     {
         TRN("Initialize -> Idle");
         StateMachine.Initialize(_idle);
+    }
+
+    // --- Headroom helper: blocks exits from crouch/sprint and jump unless we can stand ---
+    private bool HeadroomToStand()
+    {
+        var col = _motor ? _motor.GetComponent<SimpleCapsuleResizer>() : null;
+        // If resizer missing, don't block transitions.
+        return col ? col.HasHeadroomForStand() : true;
     }
 
     private bool HoldQualifiesForGlide()
@@ -183,8 +192,15 @@ public class PlayerBrain : MonoBehaviour
                 return;
             }
 
+            // Only jump from grounded locomotion states AND only if there's headroom to stand
             if (_motor.IsGrounded() && (Is<PlayerIdleState>() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>()))
             {
+                if (!HeadroomToStand())
+                {
+                    DEC("Jump blocked: no headroom to stand.");
+                    return;
+                }
+
                 TRN($"ChangeState -> Jump (from {CurStateName}) because jump pressed while grounded.");
                 StateMachine.ChangeState(_jump);
                 return;
@@ -196,7 +212,6 @@ public class PlayerBrain : MonoBehaviour
         bool sprint = PlayerInputRouter.SprintHeld;
         bool crouch = PlayerInputRouter.CrawlHeld;
 
-        // Use deadzone-aware intent for movement
         bool hasMove = inputMoving;
 
         // Only allow Idle if we've been still long enough AND we are basically not moving
@@ -206,10 +221,36 @@ public class PlayerBrain : MonoBehaviour
 
         if (_motor.IsGrounded() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>())
         {
+            // Enter/maintain Crouch while held
             if (crouch && !Is<PlayerCrouchState>()) { TRN($"-> Crouch (from {CurStateName})"); StateMachine.ChangeState(_crouch); return; }
+
+            // Enter Sprint (shares short collider per your spec)
             if (!crouch && hasMove && sprint && !Is<PlayerSprintState>()) { TRN($"-> Sprint (from {CurStateName})"); StateMachine.ChangeState(_sprint); return; }
-            if (!crouch && hasMove && !sprint && !Is<PlayerWalkState>()) { TRN($"-> Walk (from {CurStateName})"); StateMachine.ChangeState(_walk); return; }
-            if (readyToIdle && !Is<PlayerIdleState>()) { TRN($"-> Idle (from {CurStateName})"); StateMachine.ChangeState(_idle); return; }
+
+            // ----- Exits that require STAND headroom -----
+            bool exitingShortCapsule = Is<PlayerCrouchState>() || Is<PlayerSprintState>();
+
+            // Walk
+            if (!crouch && hasMove && !sprint)
+            {
+                if (exitingShortCapsule && !HeadroomToStand())
+                {
+                    DEC("Walk blocked: no headroom to stand yet.");
+                    return; // stay in crouch/sprint until there's room
+                }
+                if (!Is<PlayerWalkState>()) { TRN($"-> Walk (from {CurStateName})"); StateMachine.ChangeState(_walk); return; }
+            }
+
+            // Idle (also gated by not crouching)
+            if (!crouch && readyToIdle)
+            {
+                if (exitingShortCapsule && !HeadroomToStand())
+                {
+                    DEC("Idle blocked: no headroom to stand yet.");
+                    return; // stay in crouch/sprint until there's room
+                }
+                if (!Is<PlayerIdleState>()) { TRN($"-> Idle (from {CurStateName})"); StateMachine.ChangeState(_idle); return; }
+            }
         }
     }
 

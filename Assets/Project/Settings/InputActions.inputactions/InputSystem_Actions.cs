@@ -375,7 +375,7 @@ public partial class @MothHuntInput: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""eb40bb66-4559-4dfa-9a2f-820438abb426"",
-                    ""path"": ""<Keyboard>/j"",
+                    ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
@@ -463,7 +463,7 @@ public partial class @MothHuntInput: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""9e97d8bd-34a7-40f9-a242-1b12361d447f"",
-                    ""path"": ""<Keyboard>/j"",
+                    ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -485,7 +485,7 @@ public partial class @MothHuntInput: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""af4f857c-8f1c-4b8a-8072-7d0eb43b42dd"",
-                    ""path"": ""<Keyboard>/n"",
+                    ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

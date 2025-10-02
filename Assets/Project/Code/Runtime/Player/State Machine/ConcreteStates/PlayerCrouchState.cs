@@ -1,3 +1,4 @@
+// PlayerCrouchState.cs
 using MothHunt.Input;
 
 public class PlayerCrouchState : PlayerState
@@ -6,6 +7,9 @@ public class PlayerCrouchState : PlayerState
 
     public override void EnterState()
     {
+        var col = motor.GetComponent<SimpleCapsuleResizer>();
+        if (col) col.Crouch();
+
         motor.Mode_Crouch();
         motor.SetHorizontalInput(0f);
         anim.PlayCrouch();
@@ -20,6 +24,5 @@ public class PlayerCrouchState : PlayerState
     public override void ExitState()
     {
         motor.SetHorizontalInput(0f);
-        // If you later shrink collider in Enter, restore it here
     }
 }

@@ -46,7 +46,6 @@ public class PlayerMotor : MonoBehaviour
     // -1 = facing left (default), +1 = facing right
     private int _faceDir = -1;
 
-
     private float _desiredX;
     private float _desiredY;
     private float _curMaxSpeedX;
@@ -57,6 +56,9 @@ public class PlayerMotor : MonoBehaviour
     private Vector3 _velocity;
     private bool _climbMode;
     private bool _glideMode;
+
+    // NEW: used to suppress head-bump the same frame we grant pass-through
+    private bool _passGrantedThisFrame;
 
     private Climbable _climbCandidate;
     public bool HasClimbCandidate => _climbCandidate != null;
@@ -79,6 +81,9 @@ public class PlayerMotor : MonoBehaviour
     public void Tick(float dt)
     {
         if (logFrames) Debug.Log($"[Motor] Tick START dt={dt:F4}  {DumpState()}");
+
+        // Reset per-frame suppression flag
+        _passGrantedThisFrame = false;
 
         // Horizontal intent -> velocity under current cap
         float horiz = _desiredX * _curMaxSpeedX;
@@ -120,25 +125,35 @@ public class PlayerMotor : MonoBehaviour
         CollisionFlags flags = _cc.Move(delta);
 
         if (logFrames) Debug.Log($"[Motor] Move delta={delta} flags={flags} grounded={_cc.isGrounded}");
-        // ==== HEAD-BUMP: cancel upward motion immediately ====
+
+        // ==== HEAD-BUMP: cancel upward motion immediately (unless we just granted pass-through) ====
         if ((flags & CollisionFlags.Above) != 0 && _velocity.y > 0f)
         {
-            // Kill upward velocity and start falling now
-            _velocity.y = -2f; // small downward bias so we don't re-stick to the ceiling
-
-            // If you were gliding (unlikely on a jump bump), end it so gravity is normal
-            if (_glideMode)
+            if (_passGrantedThisFrame)
             {
-                _glideMode = false;
-                SetGravity(normalGravity, terminalFallSpeed, "HeadBump");
+                if (logTransitions) Debug.Log("[Motor] Head bump SUPPRESSED (pass-through granted this frame).");
+                // keep upward velocity and let pass-through happen
             }
+            else
+            {
+                // Kill upward velocity and start falling now
+                _velocity.y = -2f; // small downward bias so we don't re-stick to the ceiling
 
-            if (logTransitions) Debug.Log("[Motor] Head bump -> cancel jump, start falling.");
+                // If you were gliding (unlikely on a jump bump), end it so gravity is normal
+                if (_glideMode)
+                {
+                    _glideMode = false;
+                    SetGravity(normalGravity, terminalFallSpeed, "HeadBump");
+                }
+
+                if (logTransitions) Debug.Log("[Motor] Head bump -> cancel jump, start falling.");
+            }
         }
+
         // === Momentum update (never builds in air/walk; only on true ground sprint) ===
         TickSprintMomentumBySpeed(dt);
 
-        // === NEW: when grounded, keep airMoveSpeed in sync so future airborne cap is correct ===
+        // === When grounded, keep airMoveSpeed in sync so future airborne cap is correct ===
         if (_cc.isGrounded)
             SyncAirMoveSpeedWhileGrounded();
 
@@ -294,7 +309,9 @@ public class PlayerMotor : MonoBehaviour
             float feetY = transform.position.y + _cc.center.y - (_cc.height * 0.5f) + _cc.skinWidth;
             Vector3 origin = new Vector3(transform.position.x, feetY + 0.05f, transform.position.z);
             float radius = _cc.radius * 0.95f;
-            float distance = 0.4f;
+
+            // Look farther up to catch the slab on the very first frame
+            float distance = Mathf.Max(0.6f, _cc.height * 0.5f + 0.2f);
 
             if (Physics.SphereCast(origin, radius, Vector3.up, out var hit, distance, ~0, QueryTriggerInteraction.Ignore))
             {
@@ -303,6 +320,7 @@ public class PlayerMotor : MonoBehaviour
                 {
                     Debug.Log($"[Motor] Pre-open: spherecast found '{plat.name}' above @ y={plat.TopYWorld:F3}.", this);
                     pass.PassUpThrough(plat.solid, plat.TopYWorld);
+                    _passGrantedThisFrame = true; // suppress head-bump this frame
                 }
             }
         }
@@ -419,8 +437,9 @@ public class PlayerMotor : MonoBehaviour
             bool goingUp = _velocity.y > 0f;
             if (underside && goingUp && TryGetComponent<PlayerPlatformPass>(out var pass))
             {
-                Debug.Log("[Motor] UNDERSIDE contact while going up → grant pass-through.", this);
+                if (logTransitions) Debug.Log("[Motor] UNDERSIDE contact while going up → grant pass-through.", this);
                 pass.PassUpThrough(plat.solid, plat.TopYWorld);
+                _passGrantedThisFrame = true; // ensure head-bump is ignored this frame
             }
         }
     }

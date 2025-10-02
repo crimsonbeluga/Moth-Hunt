@@ -1,3 +1,4 @@
+// PlayerJumpState.cs
 using UnityEngine;
 using MothHunt.Input;
 
@@ -12,7 +13,14 @@ public class PlayerJumpState : PlayerState
 
     public override void EnterState()
     {
-        float m = motor.SprintMomentum; // 0..1 from actual movement speed
+        var col = motor.GetComponent<SimpleCapsuleResizer>();
+        // Only expand to Stand if there is headroom (Brain should ensure this; keep it safe here)
+        if (col == null || col.HasHeadroomForStand())
+        {
+            if (col) col.Stand();
+        }
+
+        float m = motor.SprintMomentum;
         _startAirSpeed = motor.walkSpeed;
         _targetAirSpeed = Mathf.Lerp(motor.walkSpeed, motor.sprintSpeed, m);
 
@@ -24,9 +32,7 @@ public class PlayerJumpState : PlayerState
         _rampDuration = Mathf.Max(0.0001f, motor.airSpeedRampTime);
 
         motor.SetHorizontalInput(0f);
-
         anim.PlayJump();
-
     }
 
     public override void FrameUpdate()
@@ -46,6 +52,5 @@ public class PlayerJumpState : PlayerState
     public override void ExitState()
     {
         motor.SetHorizontalInput(0f);
-        // no reset of airMoveSpeed; Air state manages it
     }
 }

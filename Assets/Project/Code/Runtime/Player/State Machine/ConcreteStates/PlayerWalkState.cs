@@ -1,3 +1,4 @@
+// PlayerWalkState.cs
 using MothHunt.Input;
 
 public class PlayerWalkState : PlayerState
@@ -6,6 +7,9 @@ public class PlayerWalkState : PlayerState
 
     public override void EnterState()
     {
+        var col = motor.GetComponent<SimpleCapsuleResizer>();
+        if (col) col.Stand();
+
         motor.Mode_Walk();
         motor.SetHorizontalInput(0f);
         anim.PlayWalk();
@@ -13,8 +17,8 @@ public class PlayerWalkState : PlayerState
 
     public override void FrameUpdate()
     {
-        var mv = PlayerInputRouter.Move;   // expects "Move" action in your input map
-        motor.SetHorizontalInput(mv.x);    // set useZForHorizontal=true if your scene uses Z
+        var mv = PlayerInputRouter.Move;
+        motor.SetHorizontalInput(mv.x);
     }
 
     public override void ExitState()

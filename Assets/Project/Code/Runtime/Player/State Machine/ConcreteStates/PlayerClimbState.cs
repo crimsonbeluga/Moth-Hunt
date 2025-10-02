@@ -1,3 +1,4 @@
+// PlayerClimbState.cs
 using MothHunt.Input;
 
 public class PlayerClimbState : PlayerState
@@ -6,6 +7,9 @@ public class PlayerClimbState : PlayerState
 
     public override void EnterState()
     {
+        var col = motor.GetComponent<SimpleCapsuleResizer>();
+        if (col) col.Stand();
+
         motor.Mode_Climb();           // zero vertical, disable gravity
         anim.PlayClimb();
     }
@@ -19,7 +23,7 @@ public class PlayerClimbState : PlayerState
 
     public override void ExitState()
     {
-        motor.End_Climb();                  // restores normal gravity + clears climb intent
+        motor.End_Climb();                 // restores normal gravity + clears climb intent
         motor.SetVerticalClimbInput(0f);   // stop vertical drift
     }
 }

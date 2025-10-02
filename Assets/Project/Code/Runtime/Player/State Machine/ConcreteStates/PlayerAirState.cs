@@ -1,3 +1,4 @@
+// PlayerAirState.cs
 using UnityEngine;
 using MothHunt.Input;
 
@@ -9,6 +10,9 @@ public class PlayerAirState : PlayerState
 
     public override void EnterState()
     {
+        var col = motor.GetComponent<SimpleCapsuleResizer>();
+        if (col) col.Stand();
+
         motor.Mode_AirMove();
         anim.PlayAir();
     }
