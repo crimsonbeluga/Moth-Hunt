@@ -211,10 +211,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81d25b616eee3984aa6108ac358eae15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealthManager
+  deathManager: {fileID: 739911620}
   maxHealth: 100
   regenRate: 1
   regenDelay: 5
-  deathManager: {fileID: 739911620}
 --- !u!1 &935966401
 GameObject:
   m_ObjectHideFlags: 0
