@@ -25,58 +25,54 @@ using UnityEngine.InputSystem.Utilities;
 /// <code>
 /// using namespace UnityEngine;
 /// using UnityEngine.InputSystem;
-/// 
+///
 /// // Example of using an InputActionMap named "Player" from a UnityEngine.MonoBehaviour implementing callback interface.
 /// public class Example : MonoBehaviour, MyActions.IPlayerActions
 /// {
 ///     private MyActions_Actions m_Actions;                  // Source code representation of asset.
 ///     private MyActions_Actions.PlayerActions m_Player;     // Source code representation of action map.
-/// 
+///
 ///     void Awake()
 ///     {
 ///         m_Actions = new MyActions_Actions();              // Create asset object.
 ///         m_Player = m_Actions.Player;                      // Extract action map object.
 ///         m_Player.AddCallbacks(this);                      // Register callback interface IPlayerActions.
 ///     }
-/// 
+///
 ///     void OnDestroy()
 ///     {
 ///         m_Actions.Dispose();                              // Destroy asset object.
 ///     }
-/// 
+///
 ///     void OnEnable()
 ///     {
 ///         m_Player.Enable();                                // Enable all actions within map.
 ///     }
-/// 
+///
 ///     void OnDisable()
 ///     {
 ///         m_Player.Disable();                               // Disable all actions within map.
 ///     }
-/// 
+///
 ///     #region Interface implementation of MyActions.IPlayerActions
-/// 
+///
 ///     // Invoked when "Move" action is either started, performed or canceled.
 ///     public void OnMove(InputAction.CallbackContext context)
 ///     {
 ///         Debug.Log($"OnMove: {context.ReadValue&lt;Vector2&gt;()}");
 ///     }
-/// 
+///
 ///     // Invoked when "Attack" action is either started, performed or canceled.
 ///     public void OnAttack(InputAction.CallbackContext context)
 ///     {
 ///         Debug.Log($"OnAttack: {context.ReadValue&lt;float&gt;()}");
 ///     }
-/// 
+///
 ///     #endregion
 /// }
 /// </code>
 /// </example>
-<<<<<<< Updated upstream
 public partial class @MothHuntInput: IInputActionCollection2, IDisposable
-=======
-public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
->>>>>>> Stashed changes
 {
     /// <summary>
     /// Provides access to the underlying asset instance.
@@ -86,11 +82,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     /// <summary>
     /// Constructs a new instance.
     /// </summary>
-<<<<<<< Updated upstream
     public @MothHuntInput()
-=======
-    public @InputSystem_Actions()
->>>>>>> Stashed changes
     {
         asset = InputActionAsset.FromJson(@"{
     ""version"": 1,
@@ -383,11 +375,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""eb40bb66-4559-4dfa-9a2f-820438abb426"",
-<<<<<<< Updated upstream
-                    ""path"": ""<Keyboard>/space"",
-=======
                     ""path"": ""<Keyboard>/j"",
->>>>>>> Stashed changes
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
@@ -475,11 +463,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""9e97d8bd-34a7-40f9-a242-1b12361d447f"",
-<<<<<<< Updated upstream
-                    ""path"": ""<Keyboard>/space"",
-=======
                     ""path"": ""<Keyboard>/j"",
->>>>>>> Stashed changes
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -501,11 +485,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""af4f857c-8f1c-4b8a-8072-7d0eb43b42dd"",
-<<<<<<< Updated upstream
-                    ""path"": ""<Keyboard>/e"",
-=======
                     ""path"": ""<Keyboard>/n"",
->>>>>>> Stashed changes
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -1269,17 +1249,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
     }
 
-<<<<<<< Updated upstream
     ~@MothHuntInput()
     {
         UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, MothHuntInput.Player.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, MothHuntInput.UI.Disable() has not been called.");
-=======
-    ~@InputSystem_Actions()
-    {
-        UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, InputSystem_Actions.Player.Disable() has not been called.");
-        UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, InputSystem_Actions.UI.Disable() has not been called.");
->>>>>>> Stashed changes
     }
 
     /// <summary>
@@ -1375,20 +1348,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     /// </summary>
     public struct PlayerActions
     {
-<<<<<<< Updated upstream
         private @MothHuntInput m_Wrapper;
-=======
-        private @InputSystem_Actions m_Wrapper;
->>>>>>> Stashed changes
 
         /// <summary>
         /// Construct a new instance of the input action map wrapper class.
         /// </summary>
-<<<<<<< Updated upstream
         public PlayerActions(@MothHuntInput wrapper) { m_Wrapper = wrapper; }
-=======
-        public PlayerActions(@InputSystem_Actions wrapper) { m_Wrapper = wrapper; }
->>>>>>> Stashed changes
         /// <summary>
         /// Provides access to the underlying input action "Player/Move".
         /// </summary>
@@ -1628,20 +1593,12 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     /// </summary>
     public struct UIActions
     {
-<<<<<<< Updated upstream
         private @MothHuntInput m_Wrapper;
-=======
-        private @InputSystem_Actions m_Wrapper;
->>>>>>> Stashed changes
 
         /// <summary>
         /// Construct a new instance of the input action map wrapper class.
         /// </summary>
-<<<<<<< Updated upstream
         public UIActions(@MothHuntInput wrapper) { m_Wrapper = wrapper; }
-=======
-        public UIActions(@InputSystem_Actions wrapper) { m_Wrapper = wrapper; }
->>>>>>> Stashed changes
         /// <summary>
         /// Provides access to the underlying input action "UI/Navigate".
         /// </summary>
