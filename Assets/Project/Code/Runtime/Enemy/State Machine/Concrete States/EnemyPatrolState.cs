@@ -9,13 +9,18 @@ public class EnemyPatrolState : EnemyState
     public override void EnterState()
     {
         motor.Mode_Walk();
-        motor.SetHorizontalInput(0f);
+        motor.SetHorizontalInput(motor.walkSpeed);
     }
     public override void FrameUpdate()
     {
+        base.FrameUpdate();//unknown if needed, shouldnt hurt?
+
+        motor.SetHorizontalInput(motor.walkSpeed);
+
         /*
          * 
          */
+
     }
 
     public override void ExitState()

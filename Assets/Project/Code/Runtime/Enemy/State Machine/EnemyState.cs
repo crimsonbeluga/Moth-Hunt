@@ -5,12 +5,6 @@ public class EnemyState
     protected EnemyMotor motor;
     protected EnemyStateMachine stateMachine;
 
-    //variables each state can access
-    //pathfinding
-    public Transform[] patrolRoute;
-    //suspicion
-    public float suspicionThreshold;
-
 
     public EnemyState(EnemyMotor motor, EnemyStateMachine stateMachine)
     {

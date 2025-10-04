@@ -11,10 +11,7 @@ public class EnemyMotor : MonoBehaviour
     [Header("Speeds")]
     [Min(0f)] public float walkSpeed = 4f;
     [Min(0f)] public float sprintSpeed = 7f;
-    [Min(0f)] public float crouchSpeed = 2f;
-    [Min(0f)] public float airMoveSpeed = 4f;
-    [Min(0f)] public float glideHorizontalSpeed = 3f;
-    [Min(0f)] public float climbSpeed = 3f;
+    [Min(0f)] public float searchSpeed = 2f;
 
     [Header("Jump / Gravity")]
     public float jumpHeight = 2.2f;
@@ -58,7 +55,7 @@ public class EnemyMotor : MonoBehaviour
     // -------- Modes --------
     public void Mode_Walk() { _curMaxSpeedX = walkSpeed; SetGravity(normalGravity, terminalFallSpeed); if (logTransitions) Debug.Log($"[Motor] Mode_Walk -> {DumpState()}"); }
     public void Mode_Sprint() { _curMaxSpeedX = sprintSpeed; SetGravity(normalGravity, terminalFallSpeed); if (logTransitions) Debug.Log($"[Motor] Mode_Sprint -> {DumpState()}"); }
-    public void Mode_Crouch() { _curMaxSpeedX = crouchSpeed; SetGravity(normalGravity, terminalFallSpeed); if (logTransitions) Debug.Log($"[Motor] Mode_Crouch -> {DumpState()}"); }
+    public void Mode_Crouch() { _curMaxSpeedX = searchSpeed; SetGravity(normalGravity, terminalFallSpeed); if (logTransitions) Debug.Log($"[Motor] Mode_Crouch -> {DumpState()}"); }
 
 
     // -------- Drop-through (robust) --------
