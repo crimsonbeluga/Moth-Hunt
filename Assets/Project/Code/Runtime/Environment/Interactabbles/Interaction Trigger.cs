@@ -1,37 +1,47 @@
 using MothHunt.Input;
-using Unity.VisualScripting;
+using MothHunt.Inventory;
 using UnityEngine;
 
-public class InteractionTrigger : MonoBehaviour
+namespace MothHunt.Interaction
 {
-    private bool playerInside = false;
-
-    void Start()
+    [RequireComponent(typeof(Collider))]
+    public class InteractionTrigger : MonoBehaviour
     {
-        
-    }
+        private bool _playerInside;
+        private PlayerInventory _playerInv;
+        private IInteractable _interactable;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.CompareTag("Player")) // if the object that entered the trigger is the player
+        private void Awake()
         {
-            playerInside = true;        
+            var col = GetComponent<Collider>();
+            col.isTrigger = true;
+
+            _interactable = GetComponent<IInteractable>()
+                         ?? GetComponentInChildren<IInteractable>()
+                         ?? GetComponentInParent<IInteractable>();
         }
-    }
-    private void OnTriggerStay(Collider other)
-    {
-      if ( playerInside && PlayerInputRouter.InteractPressedThisFrame) //if are player is currently inside the triggger and we pressed interact this frame
-      {
 
-            
+        private void OnTriggerEnter(Collider other)
+        {
+            if (!other.CompareTag("Player")) return;
+            _playerInside = true;
+            _playerInv = other.GetComponent<PlayerInventory>();
+        }
 
-      }
+        private void OnTriggerExit(Collider other)
+        {
+            if (!other.CompareTag("Player")) return;
+            _playerInside = false;
+            _playerInv = null;
+        }
+
+        private void Update()
+        {
+            if (!_playerInside || _playerInv == null || _interactable == null) return;
+            if (PlayerInputRouter.InteractPressedThisFrame)
+            {
+                _interactable.Interact(_playerInv);
+            }
+        }
     }
 }
