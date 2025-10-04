@@ -94,6 +94,9 @@ namespace MothHunt.Input                          // Project namespace to avoid 
         private static bool _bound;                             // Guard to prevent double-binding (duplicate subscriptions)
         private static bool _jumpSupersededByGlide;             // Flag to suppress JumpReleased if Glide took over
 
+        public static bool InteractPressedThisFrame
+            => _actInteract != null && _actInteract.WasPressedThisFrame();
+
         private static InputActionMap _map;                     // Cached reference to the bound InputActionMap (e.g., "Player")
 
         // Cached actions (may be null if not present in the asset)

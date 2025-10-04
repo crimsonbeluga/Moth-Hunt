@@ -68,6 +68,19 @@ public class PlayerMotor : MonoBehaviour
     /// <summary>Absolute planar speed the motor is currently applying this frame.</summary>
     public float CurrentPlanarSpeed => Mathf.Abs(useZForHorizontal ? _velocity.z : _velocity.x);
 
+
+    public bool IsMovingHorizontally(float eps = 0.01f) // if we are moving left or right with a value of more or less then .01 then this or this will occur
+    {
+        if (CurrentPlanarSpeed > eps)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     void Awake()
     {
         _cc = GetComponent<CharacterController>();
@@ -333,6 +346,12 @@ public class PlayerMotor : MonoBehaviour
         if (logTransitions) Debug.Log($"[Motor] CutJump {beforeY:F2}→{_velocity.y:F2}");
     }
 
+    public void DoInterect()
+    {
+
+        
+
+    }
     // -------- Drop-through (robust) --------
     public bool TryDropThrough(float duration = 0.30f)
     {

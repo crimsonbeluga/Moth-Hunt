@@ -19,6 +19,16 @@ public class PlayerCrouchState : PlayerState
     {
         var mv = PlayerInputRouter.Move;
         motor.SetHorizontalInput(mv.x);
+
+        if (!motor.IsMovingHorizontally())
+        {
+            anim.SetSpeed(0f);
+
+        }
+        else
+        {
+            anim.SetSpeed(1f);
+        }
     }
 
     public override void ExitState()
