@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1263dddcb62578540848f01f489626ba, type: 3}
-  m_Name: Item_Pebble
+  m_Name: Item_Bottle
   m_EditorClassIdentifier: Assembly-CSharp::MothHunt.Inventory.ItemDef
-  Id: pebble
-  DisplayName: Pebble
-  Icon: {fileID: 0}
+  Id: bottle
+  DisplayName: Glass Bottle
+  Icon: {fileID: 21300000, guid: 0605959a30c387a448e08fd36514e824, type: 3}
   Category: 0
   StackLimit: 1
   Throwable: 1

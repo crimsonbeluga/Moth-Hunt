@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1263dddcb62578540848f01f489626ba, type: 3}
-  m_Name: Item_Bottle
+  m_Name: Item_Mushroom
   m_EditorClassIdentifier: Assembly-CSharp::MothHunt.Inventory.ItemDef
-  Id: bottle
-  DisplayName: Glass Bottle
-  Icon: {fileID: 0}
+  Id: mushroom
+  DisplayName: Mushroom
+  Icon: {fileID: 21300000, guid: 7f0fbacf1c3ec9c4aa16ef5281382617, type: 3}
   Category: 0
-  StackLimit: 1
+  StackLimit: 99
   Throwable: 1
   ThrowForce: 12

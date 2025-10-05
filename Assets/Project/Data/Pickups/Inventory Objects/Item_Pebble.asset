@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1263dddcb62578540848f01f489626ba, type: 3}
-  m_Name: Item_Mushroom
+  m_Name: Item_Pebble
   m_EditorClassIdentifier: Assembly-CSharp::MothHunt.Inventory.ItemDef
-  Id: mushroom
-  DisplayName: Mushroom
-  Icon: {fileID: 0}
+  Id: pebble
+  DisplayName: Pebble
+  Icon: {fileID: 21300000, guid: 15f92a61a713f4f4eb1aa9d7f9e0224b, type: 3}
   Category: 0
-  StackLimit: 99
+  StackLimit: 1
   Throwable: 1
   ThrowForce: 12

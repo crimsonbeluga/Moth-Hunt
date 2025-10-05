@@ -1,6 +1,7 @@
 ﻿// PlayerBrain.cs
 using UnityEngine;
 using MothHunt.Input;
+using MothHunt.Throwing; // for cancel helper
 
 [RequireComponent(typeof(PlayerMotor))]
 public class PlayerBrain : MonoBehaviour
@@ -34,9 +35,9 @@ public class PlayerBrain : MonoBehaviour
     public bool logTransitions = true;
 
     [Header("Locomotion smoothing")]
-    public float moveDeadzone = 0.06f;       // ignore micro inputs around 0
-    public float idleEnterDelay = 0.08f;     // must be still for this long before Idle
-    public float idleSpeedThreshold = 0.05f; // also be basically not moving
+    public float moveDeadzone = 0.06f;
+    public float idleEnterDelay = 0.08f;
+    public float idleSpeedThreshold = 0.05f;
 
     private float _lastNonZeroMoveTime = -999f;
 
@@ -49,11 +50,13 @@ public class PlayerBrain : MonoBehaviour
     private void OnClimbPressed() { _climbPressedThisFrame = true; DEC("Climb PRESSED"); }
 
     private PlayerAnimator _anim;
+    private PlayerThrowController _throw; // cached
 
     private void Awake()
     {
         _motor = GetComponent<PlayerMotor>();
-        _anim = GetComponent<PlayerAnimator>(); // Animator wrapper driven by states
+        _anim = GetComponent<PlayerAnimator>();
+        _throw = GetComponent<PlayerThrowController>();
 
         _input = new MothHuntInput();
         PlayerInputRouter.Bind(_input.Player);
@@ -80,11 +83,9 @@ public class PlayerBrain : MonoBehaviour
         StateMachine.Initialize(_idle);
     }
 
-    // --- Headroom helper: blocks exits from crouch/sprint and jump unless we can stand ---
     private bool HeadroomToStand()
     {
         var col = _motor ? _motor.GetComponent<SimpleCapsuleResizer>() : null;
-        // If resizer missing, don't block transitions.
         return col ? col.HasHeadroomForStand() : true;
     }
 
@@ -94,17 +95,8 @@ public class PlayerBrain : MonoBehaviour
         if (!PlayerInputRouter.JumpHeld) { DEC("Glide check: JumpHeld=false."); return false; }
 
         float heldFor = Time.time - _lastJumpPressTime;
-        if (heldFor < glideHoldThreshold)
-        {
-            DEC($"Glide check: heldFor {heldFor:F3}s < threshold {glideHoldThreshold:F3}s.");
-            return false;
-        }
-
-        if (glideRequireDescent && _motor.VerticalSpeed > 0f)
-        {
-            DEC($"Glide check: ascending vY={_motor.VerticalSpeed:F2} (require descent).");
-            return false;
-        }
+        if (heldFor < glideHoldThreshold) { DEC($"Glide check: heldFor {heldFor:F3}s < threshold {glideHoldThreshold:F3}s."); return false; }
+        if (glideRequireDescent && _motor.VerticalSpeed > 0f) { DEC($"Glide check: ascending vY={_motor.VerticalSpeed:F2} (require descent)."); return false; }
 
         DEC($"Glide check PASSED: heldFor={heldFor:F3}s, vY={_motor.VerticalSpeed:F2}.");
         return true;
@@ -113,15 +105,11 @@ public class PlayerBrain : MonoBehaviour
     private void Update()
     {
         if (logBrainFrames)
-        {
             DBG($"State={CurStateName} grounded={_motor.IsGrounded()} vY={_motor.VerticalSpeed:F2} move={PlayerInputRouter.Move} IsMoving={PlayerInputRouter.IsMoving} JumpHeld={PlayerInputRouter.JumpHeld}");
-        }
 
-        // Track whether input is meaningfully moving this frame (deadzone aware)
         var mvNow = PlayerInputRouter.Move;
         bool inputMoving = Mathf.Abs(mvNow.x) > moveDeadzone;
-        if (inputMoving)
-            _lastNonZeroMoveTime = Time.time;
+        if (inputMoving) _lastNonZeroMoveTime = Time.time;
 
         StateMachine.CurrentPlayerState?.FrameUpdate();
 
@@ -133,6 +121,7 @@ public class PlayerBrain : MonoBehaviour
             if (HoldQualifiesForGlide() && !Is<PlayerGlideState>())
             {
                 TRN($"ChangeState -> Glide (from {CurStateName}) via HOLD.");
+                CancelThrowOverlayIfAny();
                 StateMachine.ChangeState(_glide);
                 return;
             }
@@ -140,6 +129,7 @@ public class PlayerBrain : MonoBehaviour
             if (!PlayerInputRouter.JumpHeld && Is<PlayerGlideState>())
             {
                 TRN("ChangeState -> Air (from Glide) because JumpHeld released.");
+                CancelThrowOverlayIfAny();
                 StateMachine.ChangeState(_air);
                 return;
             }
@@ -147,13 +137,10 @@ public class PlayerBrain : MonoBehaviour
             if (!Is<PlayerGlideState>() && !Is<PlayerJumpState>() && !Is<PlayerAirState>() && !Is<PlayerClimbState>())
             {
                 TRN($"ChangeState -> Air (from {CurStateName}) fallback airborne.");
+                CancelThrowOverlayIfAny();
                 StateMachine.ChangeState(_air);
                 return;
             }
-        }
-        else
-        {
-            DEC("Grounded: skipping airborne checks.");
         }
 
         // ===== CLIMB attach/detach =====
@@ -166,6 +153,7 @@ public class PlayerBrain : MonoBehaviour
                 if (_motor.HasClimbCandidate)
                 {
                     TRN($"ChangeState -> Climb (from {CurStateName}) because climb pressed & candidate.");
+                    CancelThrowOverlayIfAny();
                     StateMachine.ChangeState(_climb);
                     return;
                 }
@@ -174,6 +162,7 @@ public class PlayerBrain : MonoBehaviour
             else
             {
                 TRN("Climb toggled off -> Air.");
+                CancelThrowOverlayIfAny();
                 StateMachine.ChangeState(_air);
                 return;
             }
@@ -189,19 +178,16 @@ public class PlayerBrain : MonoBehaviour
             if (PlayerInputRouter.DropChord && _motor.TryDropThrough())
             {
                 DEC("Jump edge became DROP (platform opened).");
+                CancelThrowOverlayIfAny();
                 return;
             }
 
-            // Only jump from grounded locomotion states AND only if there's headroom to stand
             if (_motor.IsGrounded() && (Is<PlayerIdleState>() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>()))
             {
-                if (!HeadroomToStand())
-                {
-                    DEC("Jump blocked: no headroom to stand.");
-                    return;
-                }
+                if (!HeadroomToStand()) { DEC("Jump blocked: no headroom to stand."); return; }
 
                 TRN($"ChangeState -> Jump (from {CurStateName}) because jump pressed while grounded.");
+                CancelThrowOverlayIfAny();
                 StateMachine.ChangeState(_jump);
                 return;
             }
@@ -211,50 +197,40 @@ public class PlayerBrain : MonoBehaviour
         // ===== GROUNDED locomotion =====
         bool sprint = PlayerInputRouter.SprintHeld;
         bool crouch = PlayerInputRouter.CrawlHeld;
-
         bool hasMove = inputMoving;
 
-        // Only allow Idle if we've been still long enough AND we are basically not moving
         bool readyToIdle = !hasMove
                            && (Time.time - _lastNonZeroMoveTime) > idleEnterDelay
                            && _motor.CurrentPlanarSpeed < idleSpeedThreshold;
 
         if (_motor.IsGrounded() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>())
         {
-            // Enter/maintain Crouch while held
-            if (crouch && !Is<PlayerCrouchState>()) { TRN($"-> Crouch (from {CurStateName})"); StateMachine.ChangeState(_crouch); return; }
+            if (crouch && !Is<PlayerCrouchState>()) { TRN($"-> Crouch (from {CurStateName})"); CancelThrowOverlayIfAny(); StateMachine.ChangeState(_crouch); return; }
+            if (!crouch && hasMove && sprint && !Is<PlayerSprintState>()) { TRN($"-> Sprint (from {CurStateName})"); CancelThrowOverlayIfAny(); StateMachine.ChangeState(_sprint); return; }
 
-            // Enter Sprint (shares short collider per your spec)
-            if (!crouch && hasMove && sprint && !Is<PlayerSprintState>()) { TRN($"-> Sprint (from {CurStateName})"); StateMachine.ChangeState(_sprint); return; }
-
-            // ----- Exits that require STAND headroom -----
             bool exitingShortCapsule = Is<PlayerCrouchState>() || Is<PlayerSprintState>();
 
-            // Walk
             if (!crouch && hasMove && !sprint)
             {
-                if (exitingShortCapsule && !HeadroomToStand())
-                {
-                    DEC("Walk blocked: no headroom to stand yet.");
-                    return; // stay in crouch/sprint until there's room
-                }
-                if (!Is<PlayerWalkState>()) { TRN($"-> Walk (from {CurStateName})"); StateMachine.ChangeState(_walk); return; }
+                if (exitingShortCapsule && !HeadroomToStand()) { DEC("Walk blocked: no headroom to stand yet."); return; }
+                if (!Is<PlayerWalkState>()) { TRN($"-> Walk (from {CurStateName})"); StateMachine.ChangeState(_walk); return; } // Walk allows throw overlay
             }
 
-            // Idle (also gated by not crouching)
             if (!crouch && readyToIdle)
             {
-                if (exitingShortCapsule && !HeadroomToStand())
-                {
-                    DEC("Idle blocked: no headroom to stand yet.");
-                    return; // stay in crouch/sprint until there's room
-                }
-                if (!Is<PlayerIdleState>()) { TRN($"-> Idle (from {CurStateName})"); StateMachine.ChangeState(_idle); return; }
+                if (exitingShortCapsule && !HeadroomToStand()) { DEC("Idle blocked: no headroom to stand yet."); return; }
+                if (!Is<PlayerIdleState>()) { TRN($"-> Idle (from {CurStateName})"); StateMachine.ChangeState(_idle); return; } // Idle allows throw overlay
             }
         }
     }
 
     private bool Is<T>() where T : PlayerState => StateMachine.CurrentPlayerState is T;
+
+    private void CancelThrowOverlayIfAny()
+    {
+        if (_throw && _throw.IsActive)
+            _throw.SendMessage("ExitThrowMode", SendMessageOptions.DontRequireReceiver);
+    }
 
     private void OnDisable()
     {
