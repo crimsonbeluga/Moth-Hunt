@@ -80,7 +80,7 @@ GameObject:
   - component: {fileID: 3671503690586635865}
   - component: {fileID: 7503826852788972022}
   m_Layer: 0
-  m_Name: Pebble
+  m_Name: Pickup_Pebble
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

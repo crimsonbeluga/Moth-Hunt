@@ -1,6 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿// PlayerMotor.cs
+using System.Runtime.CompilerServices;
 using UnityEngine;
-using MothHunt.Input;   // NEW: so we can set PlayerInputRouter.IsGrounded
+using MothHunt.Input;   // so we can set PlayerInputRouter.IsGrounded
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMotor : MonoBehaviour
@@ -56,13 +57,21 @@ public class PlayerMotor : MonoBehaviour
 
     private bool _passGrantedThisFrame;
 
+    // --- Input lock for external impulses (bounce pads, etc.) ---
+    private float _inputLockUntil = -999f;
+    public bool InputLocked => Time.time < _inputLockUntil;
+    public void BeginInputLock(float seconds)
+    {
+        _inputLockUntil = Mathf.Max(_inputLockUntil, Time.time + Mathf.Max(0f, seconds));
+        _desiredX = 0f; // clear residual steering while locked
+    }
+
     private Climbable _climbCandidate;
     public bool HasClimbCandidate => _climbCandidate != null;
     public Climbable CurrentClimbable => _climbCandidate;
 
     public float VerticalSpeed => _velocity.y;
     public float CurrentPlanarSpeed => Mathf.Abs(useZForHorizontal ? _velocity.z : _velocity.x);
-
     public bool IsMovingHorizontally(float eps = 0.01f) => CurrentPlanarSpeed > eps;
 
     void Awake()
@@ -82,10 +91,19 @@ public class PlayerMotor : MonoBehaviour
         _passGrantedThisFrame = false;
 
         float horiz = _desiredX * _curMaxSpeedX;
-        if (useZForHorizontal) { _velocity.x = 0f; _velocity.z = horiz; }
-        else { _velocity.x = horiz; _velocity.z = 0f; }
 
-        float beforeY = _velocity.y;
+        // ---> DO NOT overwrite horizontal when input-locked (so bounce push can stick)
+        if (useZForHorizontal)
+        {
+            _velocity.x = 0f;
+            if (!InputLocked) _velocity.z = horiz;
+        }
+        else
+        {
+            _velocity.z = 0f;
+            if (!InputLocked) _velocity.x = horiz;
+        }
+
         if (_climbMode)
         {
             _velocity.y = _desiredY * climbSpeed;
@@ -132,7 +150,7 @@ public class PlayerMotor : MonoBehaviour
         TickSprintMomentumBySpeed(dt);
         if (_cc.isGrounded) SyncAirMoveSpeedWhileGrounded();
 
-        // NEW: publish grounding each frame for other systems (Throw)
+        // publish grounding each frame for other systems (Throw/BouncePad)
         PlayerInputRouter.IsGrounded = _cc.isGrounded;
 
         if (logFrames) Debug.Log($"[Motor] Tick END   {DumpState()}");
@@ -185,6 +203,9 @@ public class PlayerMotor : MonoBehaviour
     // -------- Knobs --------
     public void SetHorizontalInput(float x01)
     {
+        // Respect input lock from bounce pads or other systems
+        if (InputLocked) x01 = 0f;
+
         _desiredX = Mathf.Clamp(x01, -1f, 1f);
         if (_spriteRenderer)
         {
@@ -250,6 +271,38 @@ public class PlayerMotor : MonoBehaviour
     }
 
     public void DoInterect() { }
+
+    // -------- External Impulses (bounce pads etc.) --------
+    public void LaunchUpToHeight(float heightMeters, bool cancelGlide = true, bool cancelClimb = true,
+                                 float? gravityOverride = null, float? terminalOverride = null)
+    {
+        if (cancelClimb && _climbMode) End_Climb();
+        float g = gravityOverride ?? normalGravity; // negative
+        float v = Mathf.Sqrt(Mathf.Abs(2f * g * Mathf.Max(0f, heightMeters)));
+        _velocity.y = v;
+
+        if (cancelGlide) _glideMode = false;
+        SetGravity(g, terminalOverride ?? terminalFallSpeed, nameof(LaunchUpToHeight));
+    }
+
+    public void NudgeHorizontal(float preserveScale01, float injectMetersPerSec)
+    {
+        bool useZ = useZForHorizontal;
+        float cur = useZ ? _velocity.z : _velocity.x;
+        float next = (cur * Mathf.Clamp01(preserveScale01)) + injectMetersPerSec;
+        if (useZ) _velocity.z = next; else _velocity.x = next;
+    }
+
+    public void ClampHorizontal(float maxMetersPerSec)
+    {
+        maxMetersPerSec = Mathf.Max(0f, maxMetersPerSec);
+        if (maxMetersPerSec <= 0f) { ZeroHorizontal(); return; }
+
+        bool useZ = useZForHorizontal;
+        float val = useZ ? _velocity.z : _velocity.x;
+        val = Mathf.Clamp(val, -maxMetersPerSec, maxMetersPerSec);
+        if (useZ) _velocity.z = val; else _velocity.x = val;
+    }
 
     // -------- Drop-through (robust) --------
     public bool TryDropThrough(float duration = 0.30f)
