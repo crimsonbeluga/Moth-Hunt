@@ -15,6 +15,10 @@ GameObject:
   - component: {fileID: 1743954607350137041}
   - component: {fileID: 1923232991165386353}
   - component: {fileID: 8982251684392439777}
+  - component: {fileID: 629223791033303295}
+  - component: {fileID: 4821546034709596157}
+  - component: {fileID: 8717535094528807971}
+  - component: {fileID: 3213160002297832831}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -110,15 +114,15 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: cedaadaee004eca4098a70c331a14272, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1f5b54e594180ab43a3975e6974b40e9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 6.49, y: 14.95}
+  m_Size: {x: 1.298, y: 2.99}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &5949876930019018513
@@ -140,6 +144,10 @@ MonoBehaviour:
   airMoveSpeed: 5
   glideHorizontalSpeed: 3.75
   climbSpeed: 4
+  momentumRiseTime: 1
+  momentumFallTime: 0.6
+  airSpeedRampTime: 0.2
+  _sprintMomentum: 0
   jumpHeight: 3.75
   normalGravity: -25
   glideGravity: -2
@@ -166,6 +174,9 @@ MonoBehaviour:
   logBrainFrames: 1
   logDecisions: 1
   logTransitions: 1
+  moveDeadzone: 0.06
+  idleEnterDelay: 0.08
+  idleSpeedThreshold: 0.05
 --- !u!114 &1923232991165386353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,6 +213,78 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &629223791033303295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3165486706134402212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c5e58a592676734193f74244616496a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimator
+--- !u!114 &4821546034709596157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3165486706134402212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af140ede0210b924589e4bf2ca4bf494, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleCapsuleResizer
+  stand:
+    height: 2.79
+    radius: 0.5
+    center: {x: -0.04, y: -0.13, z: 0}
+    stepOffset: 0.3
+  crouch:
+    height: 1.2
+    radius: 0.5
+    center: {x: -0.04, y: 0, z: 0}
+    stepOffset: 0.15
+  glide:
+    height: 1.1
+    radius: 0.45
+    center: {x: -0.04, y: 0, z: 0}
+    stepOffset: 0
+  shrinkGroundSnap: 0.02
+  applyProfileStepOffset: 1
+  headCheckMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  headroomPadding: 0.005
+--- !u!114 &8717535094528807971
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3165486706134402212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78ec49cdc07b9564f9bfae10d57b7718, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MothHunt.Inventory.PlayerInventory
+--- !u!114 &3213160002297832831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3165486706134402212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f52d34b10f564934abe13d3b38a319f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControllerPushRigidbodies
+  pushPower: 2.5
+  upwardModifier: 0
+  maxMass: 20
 --- !u!1 &6294668233895217291
 GameObject:
   m_ObjectHideFlags: 0
