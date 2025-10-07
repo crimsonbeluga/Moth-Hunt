@@ -15,11 +15,11 @@ MonoBehaviour:
   item: {fileID: 11400000, guid: cd59efbdcbd430c4097cd997e65d7a37, type: 2}
   projectilePrefab: {fileID: 4876715701769835312, guid: e261de827f29cc84bb805df15fd49ae0, type: 3}
   holdInHandPrefab: {fileID: 4876715701769835312, guid: e261de827f29cc84bb805df15fd49ae0, type: 3}
-  initialSpeed: 50
+  initialSpeed: 60
   spreadDegrees: 0
-  gravityMultiplier: 5
-  airDrag: 5
-  angularDrag: 0.05
+  gravityMultiplier: 10
+  airDrag: 2.5
+  angularDrag: 0.1
   extraUpAccelOverLife:
     serializedVersion: 2
     m_Curve:
@@ -68,10 +68,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  spinDegPerSec: 1000
+  spinDegPerSec: -1080
   useAimRaycast: 1
-  maxAimRange: 30
-  arcStyle: 2
+  maxAimRange: 1000
+  arcStyle: 0
   noiseRadius: 6
   cooldown: 0.25
   consumeOnThrow: 1
