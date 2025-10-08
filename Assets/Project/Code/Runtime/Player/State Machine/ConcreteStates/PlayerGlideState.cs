@@ -15,6 +15,9 @@ public class PlayerGlideState : PlayerState
         motor.Mode_Glide();            // weak gravity + glide terminal
         motor.SetHorizontalInput(0f);
 
+        // update camera
+        CameraController.Instance.ApplyActionModifier(CameraController.Instance.glidCamModifiers);
+
         Debug.Log($"[GlideState] Enter isGliding={motor.IsGliding()} grounded={motor.IsGrounded()} vY={motor.VerticalSpeed:F2}");
     }
 
@@ -29,6 +32,9 @@ public class PlayerGlideState : PlayerState
 
     public override void ExitState()
     {
+        //reset camera
+        CameraController.Instance.RemoveActionModifier(CameraController.Instance.glidCamModifiers);
+
         motor.End_Glide();
         motor.SetHorizontalInput(0f);
     }

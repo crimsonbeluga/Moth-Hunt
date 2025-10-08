@@ -125,6 +125,18 @@ public class CameraController : MonoBehaviour
     {
         camSettings = newSettings;
     }
+
+    public void ApplyActionModifier(ActionModifiers modifiers)
+    {
+        camSettings.offset += modifiers.camOffsetModifier;
+        camSettings.distance += modifiers.camDistanceModifier;
+    }
+
+    public void RemoveActionModifier(ActionModifiers modifiers)
+    {
+        camSettings.offset -= modifiers.camOffsetModifier;
+        camSettings.distance -= modifiers.camDistanceModifier;
+    }
 }
 
 [Serializable]
