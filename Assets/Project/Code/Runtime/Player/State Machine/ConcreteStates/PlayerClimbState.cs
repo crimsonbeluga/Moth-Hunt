@@ -1,17 +1,12 @@
-// PlayerClimbState.cs
 using MothHunt.Input;
 
 public class PlayerClimbState : PlayerState
 {
-    public PlayerClimbState(PlayerMotor motor, PlayerStateMachine sm, PlayerAnimator anim) : base(motor, sm, anim) { }
+    public PlayerClimbState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
 
     public override void EnterState()
     {
-        var col = motor.GetComponent<SimpleCapsuleResizer>();
-        if (col) col.Stand();
-
-        motor.Mode_Climb();           // zero vertical, disable gravity
-        anim.PlayClimb();
+        motor.Mode_Climb();              // zero vertical, disable gravity
     }
 
     public override void FrameUpdate()
@@ -23,7 +18,7 @@ public class PlayerClimbState : PlayerState
 
     public override void ExitState()
     {
-        motor.End_Climb();                 // restores normal gravity + clears climb intent
+        motor.End_Climb();                  // restores normal gravity + clears climb intent
         motor.SetVerticalClimbInput(0f);   // stop vertical drift
     }
 }
