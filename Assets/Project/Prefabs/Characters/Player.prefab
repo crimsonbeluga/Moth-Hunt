@@ -208,6 +208,7 @@ MonoBehaviour:
   logBrainFrames: 1
   logDecisions: 1
   logTransitions: 1
+  logLifecycle: 1
   moveDeadzone: 0.06
   idleEnterDelay: 0.08
   idleSpeedThreshold: 0.05
@@ -360,6 +361,7 @@ GameObject:
   - component: {fileID: 185486990630464870}
   - component: {fileID: 6209829342270563037}
   - component: {fileID: 2884977274020819185}
+  - component: {fileID: 2628494378236013052}
   m_Layer: 3
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -485,6 +487,33 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &2628494378236013052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6294668233895217291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9120d8473bc099a4db4d238455ff31b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraController
+  target: {fileID: 2482587883511980912}
+  DefaultCamSettings:
+    moveDampening: 0.1
+    rotationDampening: 0.1
+    distance: 10
+    offset: {x: 0, y: 2}
+    maxLookOffset: {x: 1, y: 1}
+  glidCamModifiers:
+    camOffsetModifier: {x: 0, y: -2}
+    camDistanceModifier: 3
+  crouchCamModifiers:
+    camOffsetModifier: {x: 0, y: 0}
+    camDistanceModifier: 0
+  minYaw: -20
+  maxYaw: 20
 --- !u!1 &7228582908191780279
 GameObject:
   m_ObjectHideFlags: 0
