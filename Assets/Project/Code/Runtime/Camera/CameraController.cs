@@ -14,7 +14,8 @@ public class CameraController : MonoBehaviour
         rotationDampening = 0.1f,
         distance = 10f,
         offset = new Vector2(0f, 2f),
-        maxLookOffset = new Vector2(1f, 1f)
+        maxLookOffset = new Vector2(1f, 1f),
+        tempOffset = Vector2.zero
     };
 
     [SerializeField] private float minYaw = -20f;
@@ -23,6 +24,12 @@ public class CameraController : MonoBehaviour
     private Vector3 currentVelocity;
     private float currentYawVelocity;
     private float currentYaw;
+
+    public Vector2 tempOffSet
+    {
+        get => camSettings.tempOffset;
+        set => camSettings.tempOffset = value;
+    }
 
     private void Awake()
     {
@@ -110,4 +117,6 @@ public struct CamSettings
     public float distance;
     public Vector2 offset;
     public Vector2 maxLookOffset;
+    [NonSerialized]
+    public Vector2 tempOffset;
 }
