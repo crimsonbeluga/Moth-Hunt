@@ -6,9 +6,11 @@ public class CameraController : MonoBehaviour
     public static CameraController Instance { get; private set; }
 
     [SerializeField] private Transform target;
-    [SerializeField] private CamSettings camSettings;
+    private CamSettings camSettings;
 
-    private static readonly CamSettings DefaultCamSettings = new CamSettings
+    [Header("Designer Variables")]
+    [SerializeField]
+    private CamSettings DefaultCamSettings = new CamSettings
     {
         moveDampening = 0.1f,
         rotationDampening = 0.1f,
@@ -18,6 +20,7 @@ public class CameraController : MonoBehaviour
         tempOffset = Vector2.zero
     };
 
+    [Header("Limitations")]
     [SerializeField] private float minYaw = -20f;
     [SerializeField] private float maxYaw = 20f;
 
