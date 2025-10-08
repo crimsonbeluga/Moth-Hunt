@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 [RequireComponent(typeof(EnemyMotor))]
@@ -13,7 +14,7 @@ public class EnemyBrain : MonoBehaviour
     public bool isIdleToStart = false;
     //pathfinding
     public Transform[] _patrolRoute;
-    private int _patrolInt = 0;
+    public int _patrolInt = 0;
     private Transform _lastKnownPlayerLocation;
     //suspicion
     public float _suspicion = 0;
@@ -87,6 +88,7 @@ public class EnemyBrain : MonoBehaviour
         {
             TRN("Initialize -> Patrol");
             StateMachine.Initialize(_patrol);
+            SetPatrolDirection();
         }
 
     }
@@ -96,12 +98,44 @@ public class EnemyBrain : MonoBehaviour
     {
         StateMachine.CurrentEnemyState?.FrameUpdate();
 
+        //Deciding patrol 
+        //if in patrol state
+        if (Is<EnemyPatrolState>())
+        {
+            //check what direction the enemy is moving
+            //if moving right (+)
+            if(_motor.patrolSpeed > 0f)
+            {
+                //at transform of patrol point
+                if (this.transform.position.x >= _patrolRoute[_patrolInt].transform.position.x)
+                {
+                    //add pause
+                    SetNextPatrolInt();
+                    
+                }
+
+            }
+            else //if moving left (-)
+            {
+                //at transform of patrol point
+                if (this.transform.position.x <= _patrolRoute[_patrolInt].transform.position.x)
+                {
+                    
+                    //add pause
+                    SetNextPatrolInt();               
+                    Debug.Log(_motor.patrolSpeed);
+                }
+            }
+
+        }
+
+
         //if player within line of sight or recieved noise
         //suspicion++
-        
+
 
         //set suspicion levels
-        if(_suspicion > _alertedThreshold )
+        if (_suspicion > _alertedThreshold )
         {
             //if above alerted threshold
             _isAlertedThreshold = true;
@@ -195,6 +229,7 @@ public class EnemyBrain : MonoBehaviour
                 //set state to patrol
                 TRN($"ChangeState -> Patrol (from {CurStateName}) via Lack of Suspicion.");
                 StateMachine.ChangeState(_patrol);
+                SetPatrolDirection();
                 return;
             }
             else
@@ -205,13 +240,40 @@ public class EnemyBrain : MonoBehaviour
 
         }
 
+
+
+
     }
     
     //Unknown purpose to Shan
     private bool Is<T>() where T : EnemyState => StateMachine.CurrentEnemyState is T;
-    
-    
 
+    //pseudo decision making, ensuring the sprite flips properly.
+    public void SetPatrolDirection()
+    {
+        Mathf.Abs(_motor.patrolSpeed);
+        if (_patrolRoute[_patrolInt].transform.position.x < this.transform.position.x)
+        {
+            
+            
+            _motor.patrolSpeed *= -1;
+        }
 
+    }
 
+    private void SetNextPatrolInt()
+    {
+     
+        //if next int is not null
+        if (_patrolInt == _patrolRoute.Length-1)
+        {
+            _patrolInt = 0;
+            SetPatrolDirection();
+        }
+        else //if next is null
+        {
+            _patrolInt++;
+            SetPatrolDirection();
+        }
+    }
 }

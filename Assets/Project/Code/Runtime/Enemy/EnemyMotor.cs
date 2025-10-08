@@ -40,7 +40,7 @@ public class EnemyMotor : MonoBehaviour
     public bool logInputs = false;
 
     [Header("Visual")]
-    private SpriteRenderer _spriteRenderer;
+    private SpriteRenderer _enemySpriteRenderer;
 
     private int _faceDir = -1;
 
@@ -77,7 +77,7 @@ public class EnemyMotor : MonoBehaviour
     private void Awake()
     {
         _cc = GetComponent<CharacterController>();
-        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _enemySpriteRenderer = GetComponent<SpriteRenderer>();
         Mode_Patrol();
         Debug.Log($"[Motor] Awake -> {DumpState()}");
     }
@@ -199,8 +199,19 @@ public class EnemyMotor : MonoBehaviour
     }
 
     // -------- Knobs --------
-    public void SetHorizontalInput(float x01) { _desiredX = Mathf.Clamp(x01, -1f, 1f); if (logInputs) Debug.Log($"[Motor] SetHorizontalInput -> {_desiredX:F2}"); }
-    public void SetVerticalClimbInput(float y01) { _desiredY = Mathf.Clamp(y01, -1f, 1f); if (logInputs) Debug.Log($"[Motor] SetVerticalClimbInput -> {_desiredY:F2}"); }
+    public void SetHorizontalInput(float x01)
+    {
+        // Respect input lock from bounce pads or other systems
+        if (InputLocked) x01 = 0f;
+
+        _desiredX = Mathf.Clamp(x01, -1f, 1f);
+        if (_enemySpriteRenderer)
+        {
+            if (_desiredX > 0.05f) { _enemySpriteRenderer.flipX = true; _faceDir = +1; }
+            else if (_desiredX < -0.05f) { _enemySpriteRenderer.flipX = false; _faceDir = -1; }
+        }
+    }
+    public void SetVerticalClimbInput(float y01) { _desiredY = Mathf.Clamp(y01, -1f, 1f); }
     public void SetGravity(float g, float term, [CallerMemberName] string caller = null)
     { if (logGravityChanges) Debug.Log($"[Motor] SetGravity by '{caller}'  g:{_curGravity:F2}→{g:F2}  term:{_curTerminal:F2}→{term:F2}"); _curGravity = g; _curTerminal = term; }
 

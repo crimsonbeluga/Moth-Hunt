@@ -16,6 +16,7 @@ public class EnemyPatrolState : EnemyState
     {
         base.FrameUpdate();//unknown if needed, shouldnt hurt?
 
+        
         motor.SetHorizontalInput(motor.patrolSpeed);
 
         /*
