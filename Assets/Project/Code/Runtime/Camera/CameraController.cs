@@ -20,6 +20,20 @@ public class CameraController : MonoBehaviour
         tempOffset = Vector2.zero
     };
 
+    [SerializeField]
+    public ActionModifiers glidCamModifiers = new ActionModifiers
+    {
+        camOffsetModifier = new Vector2(0f, -2f),
+        camDistanceModifier = 3f
+    };
+
+    [SerializeField]
+    public ActionModifiers crouchCamModifiers = new ActionModifiers
+    {
+        camOffsetModifier = new Vector2(0f, 0),
+        camDistanceModifier = 0
+    };
+
     [Header("Limitations")]
     [SerializeField] private float minYaw = -20f;
     [SerializeField] private float maxYaw = 20f;
@@ -60,7 +74,8 @@ public class CameraController : MonoBehaviour
         Vector3 desiredPosition =
             target.position + Vector3.up * camSettings.offset.y //figure out verticality
             + Vector3.right * camSettings.offset.x //figure out where to place camera horizontally
-            - target.forward * camSettings.distance; //distance behind the target
+            - target.forward * camSettings.distance //distance behind the target
+            + new Vector3(tempOffSet.x, tempOffSet.y, 0f); //apply tempOffSet
 
         transform.position = Vector3.SmoothDamp( //smooth move camera to desired position
             transform.position,
@@ -73,7 +88,7 @@ public class CameraController : MonoBehaviour
     private void UpdateRotation()
     {
         // Calculate the desired yaw based on the target's position
-        Vector3 lookDir = target.position - transform.position;
+        Vector3 lookDir = (target.position + new Vector3(tempOffSet.x, tempOffSet.y, 0f)) - transform.position; //apply tempOffSet
 
         //figure out the yaw
         float desiredYaw = Mathf.Atan2(lookDir.x, lookDir.z) * Mathf.Rad2Deg;
@@ -122,4 +137,11 @@ public struct CamSettings
     public Vector2 maxLookOffset;
     [NonSerialized]
     public Vector2 tempOffset;
+}
+
+[Serializable]
+public struct ActionModifiers
+{
+    public Vector2 camOffsetModifier;
+    public float camDistanceModifier;
 }
