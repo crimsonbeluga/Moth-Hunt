@@ -8,7 +8,7 @@ public class EnemyReturningState : EnemyState
 
     public override void EnterState()
     {
-        motor.Mode_Walk();
+        motor.Mode_Search();//Potentially change to new motor mode
         motor.SetHorizontalInput(0f);
     }
 

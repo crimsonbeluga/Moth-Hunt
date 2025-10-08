@@ -8,7 +8,7 @@ public class EnemySearchState : EnemyState
 
     public override void EnterState()
     {
-        motor.Mode_Walk();
+        motor.Mode_Search();
         motor.SetHorizontalInput(0f);
     }
 

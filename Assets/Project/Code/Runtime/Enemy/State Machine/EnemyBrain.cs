@@ -12,11 +12,30 @@ public class EnemyBrain : MonoBehaviour
     //Variables for States
     public bool isIdleToStart = false;
     //pathfinding
-    public Transform[] patrolRoute;
-    private int patrolInt = 0;
+    public Transform[] _patrolRoute;
+    private int _patrolInt = 0;
+    private Transform _lastKnownPlayerLocation;
     //suspicion
-    public float suspicion = 0;
-    public float suspicionThreshold = 100f;
+    public float _suspicion = 0;
+    public float _suspicionThreshold = 100f;
+    public float _alertedThreshold = 15f;
+    public float _chaseThreshold = 75f;
+    public float _searchTime = 0f;
+
+    //booleans for states
+    private bool _isAlertedThreshold = false;
+    private bool _isChasing = false;
+
+    //distance variables
+    public float _lineOfSightRange = 5f;
+    public float _attackRange = 1f;
+
+    //Line of Sight
+    private RaycastHit _hit;
+
+
+    //reference to player
+    public Transform PlayerTransform;
 
 
     //States
@@ -76,6 +95,115 @@ public class EnemyBrain : MonoBehaviour
     void Update()
     {
         StateMachine.CurrentEnemyState?.FrameUpdate();
+
+        //if player within line of sight or recieved noise
+        //suspicion++
+        
+
+        //set suspicion levels
+        if(_suspicion > _alertedThreshold )
+        {
+            //if above alerted threshold
+            _isAlertedThreshold = true;
+
+        }
+        else
+        {
+            //failed to reach alerted
+            _isAlertedThreshold = false;
+        }
+
+        //if player enter line of sight
+        //set _isChasing = true
+        Physics.Raycast(this.transform.position, this.transform.right, out _hit, _lineOfSightRange);
+
+        
+
+        // if reach alerted state
+        if (_isAlertedThreshold)
+        {
+            
+            //if reach chase state
+            if (_isChasing) 
+            {             
+                //checks distance to player
+                float distance = Vector3.Distance(this.transform.position, PlayerTransform.position);
+                //if in attack range
+                if (distance < _attackRange )
+                {
+                    if (!Is<EnemyAttackState>())
+                    {
+                        //set state to attack
+                        TRN($"ChangeState -> Attack (from {CurStateName}) via Distance.");
+                        StateMachine.ChangeState(_attack);
+                        return;
+                    }
+                }
+
+                if (!Is<EnemyChaseState>())
+                {
+                    //set state to chase
+                    TRN($"ChangeState -> Chase (from {CurStateName}) via Suspicion.");
+                    StateMachine.ChangeState(_chase);
+                    return;
+                }
+            }
+
+            if (!Is<EnemyAlertedState>())
+            {
+                //set state to alerted
+                TRN($"ChangeState -> Alerted (from {CurStateName}) via Suspicion.");
+                StateMachine.ChangeState(_alerted);
+                return;
+            }
+        }
+        
+        //if no suspicion
+        if (_suspicion == 0)
+        {
+            //if not returning
+            if(!Is<EnemyReturningState>())
+            {
+
+
+
+            }
+        }
+
+        //decide which state to check
+        if (isIdleToStart)
+        {
+            //if not idle
+            if (!Is<EnemyIdleState>())
+            {
+                //set state idle
+                TRN($"ChangeState -> Idle (from {CurStateName}) via Lack of Suspicion.");
+                StateMachine.ChangeState(_idle);
+                return;
+            }
+            else
+            {
+                //if idle, return
+                return;
+            }
+        }
+        else//if patrol to start
+        {
+            //if not patrolling
+            if (!Is<EnemyPatrolState>())
+            {
+                //set state to patrol
+                TRN($"ChangeState -> Patrol (from {CurStateName}) via Lack of Suspicion.");
+                StateMachine.ChangeState(_patrol);
+                return;
+            }
+            else
+            {
+                //if patrolling, return
+                return;
+            }
+
+        }
 
     }
     

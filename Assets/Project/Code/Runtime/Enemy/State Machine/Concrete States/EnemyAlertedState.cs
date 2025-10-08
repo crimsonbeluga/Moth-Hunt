@@ -8,7 +8,7 @@ public class EnemyAlertedState : EnemyState
 
     public override void EnterState()
     {
-        motor.Mode_Crouch();//logic is alerted is slower, so takes crawling values at approx. half walk speed
+        motor.Mode_Patrol();
         motor.SetHorizontalInput(0f);
     }
 

@@ -8,14 +8,15 @@ public class EnemyPatrolState : EnemyState
 
     public override void EnterState()
     {
-        motor.Mode_Walk();
-        motor.SetHorizontalInput(motor.walkSpeed);
+        motor.Mode_Patrol();
+        motor.SetHorizontalInput(0f);
+        //add anim walk enter
     }
     public override void FrameUpdate()
     {
         base.FrameUpdate();//unknown if needed, shouldnt hurt?
 
-        motor.SetHorizontalInput(motor.walkSpeed);
+        motor.SetHorizontalInput(motor.patrolSpeed);
 
         /*
          * 
@@ -26,6 +27,7 @@ public class EnemyPatrolState : EnemyState
     public override void ExitState()
     {
         motor.SetHorizontalInput(0f);
+        motor.ZeroHorizontal();
     }
 
 
