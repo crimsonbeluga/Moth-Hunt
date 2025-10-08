@@ -33,6 +33,13 @@ namespace MothHunt.Input                          // Project namespace to avoid 
         /// <summary>True while player intends an all-fours pose (sprint or crawl held).</summary>
         public static bool AllFoursIntent => SprintHeld || CrawlHeld;  // Derived convenience flag
 
+        // ---------- NEW: simple edge queries we need for Throw & cancels ----------
+        public static bool ThrowPressedThisFrame => _actThrow != null && _actThrow.WasPressedThisFrame();
+        public static bool ClimbPressedThisFrame => _actClimb != null && _actClimb.WasPressedThisFrame();
+
+        // ---------- NEW: motor sets this each frame so everyone agrees on grounding ----------
+        public static bool IsGrounded { get; set; }
+
         // --------------------------- Events (edges) ---------------------------
         public static event Action OnJumpPressed;               // Fired on jump press edge
         public static event Action OnJumpReleased;              // Fired on jump release edge
@@ -94,6 +101,9 @@ namespace MothHunt.Input                          // Project namespace to avoid 
         private static bool _bound;                             // Guard to prevent double-binding (duplicate subscriptions)
         private static bool _jumpSupersededByGlide;             // Flag to suppress JumpReleased if Glide took over
 
+        public static bool InteractPressedThisFrame
+            => _actInteract != null && _actInteract.WasPressedThisFrame();
+
         private static InputActionMap _map;                     // Cached reference to the bound InputActionMap (e.g., "Player")
 
         // Cached actions (may be null if not present in the asset)
@@ -106,7 +116,7 @@ namespace MothHunt.Input                          // Project namespace to avoid 
         public static void Bind(MothHuntInput.PlayerActions actions)   // Overload that accepts the generated wrapper's PlayerActions
         {
             if (_bound || actions.Equals(default)) return;             // If already bound or wrapper uninitialized, do nothing
-            Bind(actions.Get()); // explicit, avoids ambiguous implicit cast // Extract underlying InputActionMap and delegate to other Bind
+            Bind(actions.Get());                                       // Extract underlying InputActionMap and delegate to other Bind
         }
 
         /// <summary>Fallback: bind using a raw action map (usually the "Player" map).</summary>
@@ -135,104 +145,29 @@ namespace MothHunt.Input                          // Project namespace to avoid 
             _actInv3 = _map.FindAction(ACTION_INV_SLOT_THREE, throwIfNotFound: false);  // Look up "Inventory slot three"
 
             // Subscribe if present
-            if (_actMove != null)                                      // Only wire handlers if the action exists
-            {
-                _actMove.started += OnMoveStarted;                     // Start edge: input begins actuating (crosses threshold)
-                _actMove.performed += OnMovePerformed;                 // Performed: value updates while active (Vector2 changes)
-                _actMove.canceled += OnMoveCanceled;                   // Canceled: input returns to neutral/released
-            }
-
-            if (_actLook != null)
-            {
-                _actLook.performed += OnLookPerformed;                 // Look value updated
-                _actLook.canceled += OnLookCanceled;                   // Look ends (e.g., stick centered)
-            }
-
-            if (_actJump != null)
-            {
-                // Jump fires on key DOWN; release on key UP (Tap removed from binding)
-                _actJump.started += OnJumpStarted;                     // Jump press edge
-                _actJump.canceled += OnJumpCanceled;                   // Jump release edge (unless superseded by Glide)
-            }
-
-            if (_actGlide != null)
-            {
-                _actGlide.performed += OnGlidePerformed;               // Glide engaged (e.g., hold interaction min time passed)
-                _actGlide.canceled += OnGlideCanceled;                 // Glide ended (button released or interaction canceled)
-            }
-
-            if (_actSprint != null)
-            {
-                _actSprint.performed += OnSprintPerformed;             // Sprint pressed/engaged
-                _actSprint.canceled += OnSprintCanceled;               // Sprint released
-            }
-
-            if (_actCrawl != null)
-            {
-                _actCrawl.performed += OnCrawlPerformed;               // Crawl pressed/engaged
-                _actCrawl.canceled += OnCrawlCanceled;                 // Crawl released
-            }
-
-            if (_actClimb != null)
-            {
-                _actClimb.performed += OnClimbPerformed;               // Climb pressed/engaged
-                _actClimb.canceled += OnClimbCanceled;                 // Climb released
-            }
-
-            if (_actInteract != null)
-            {
-                _actInteract.performed += OnInteractPerformed;         // Interact pressed/engaged
-                _actInteract.canceled += OnInteractCanceled;           // Interact released
-            }
-
-            if (_actThrow != null)
-            {
-                _actThrow.performed += OnThrowPerformed;               // Throw pressed/engaged
-                _actThrow.canceled += OnThrowCanceled;                 // Throw released
-            }
-
-            if (_actMenu != null)
-            {
-                _actMenu.performed += OnMenuPerformed;                 // Menu pressed/engaged
-                _actMenu.canceled += OnMenuCanceled;                   // Menu released
-            }
-
-            if (_actMapInv != null)
-            {
-                _actMapInv.performed += OnMapInventoryPerformed;       // Map/Inventory pressed/engaged
-                _actMapInv.canceled += OnMapInventoryCanceled;         // Map/Inventory released
-            }
-
-            if (_actCamouflage != null)
-            {
-                _actCamouflage.performed += OnCamouflagePerformed;     // Camouflage pressed/engaged
-                _actCamouflage.canceled += OnCamouflageCanceled;       // Camouflage released
-            }
-
-            if (_actInv1 != null)
-            {
-                _actInv1.performed += OnInv1Performed;                 // Inventory slot 1 pressed
-                _actInv1.canceled += OnInv1Canceled;                   // Inventory slot 1 released
-            }
-            if (_actInv2 != null)
-            {
-                _actInv2.performed += OnInv2Performed;                 // Inventory slot 2 pressed
-                _actInv2.canceled += OnInv2Canceled;                   // Inventory slot 2 released
-            }
-            if (_actInv3 != null)
-            {
-                _actInv3.performed += OnInv3Performed;                 // Inventory slot 3 pressed
-                _actInv3.canceled += OnInv3Canceled;                   // Inventory slot 3 released
-            }
+            if (_actMove != null) { _actMove.started += OnMoveStarted; _actMove.performed += OnMovePerformed; _actMove.canceled += OnMoveCanceled; }
+            if (_actLook != null) { _actLook.performed += OnLookPerformed; _actLook.canceled += OnLookCanceled; }
+            if (_actJump != null) { _actJump.started += OnJumpStarted; _actJump.canceled += OnJumpCanceled; }
+            if (_actGlide != null) { _actGlide.performed += OnGlidePerformed; _actGlide.canceled += OnGlideCanceled; }
+            if (_actSprint != null) { _actSprint.performed += OnSprintPerformed; _actSprint.canceled += OnSprintCanceled; }
+            if (_actCrawl != null) { _actCrawl.performed += OnCrawlPerformed; _actCrawl.canceled += OnCrawlCanceled; }
+            if (_actClimb != null) { _actClimb.performed += OnClimbPerformed; _actClimb.canceled += OnClimbCanceled; }
+            if (_actInteract != null) { _actInteract.performed += OnInteractPerformed; _actInteract.canceled += OnInteractCanceled; }
+            if (_actThrow != null) { _actThrow.performed += OnThrowPerformed; _actThrow.canceled += OnThrowCanceled; }
+            if (_actMenu != null) { _actMenu.performed += OnMenuPerformed; _actMenu.canceled += OnMenuCanceled; }
+            if (_actMapInv != null) { _actMapInv.performed += OnMapInventoryPerformed; _actMapInv.canceled += OnMapInventoryCanceled; }
+            if (_actCamouflage != null) { _actCamouflage.performed += OnCamouflagePerformed; _actCamouflage.canceled += OnCamouflageCanceled; }
+            if (_actInv1 != null) { _actInv1.performed += OnInv1Performed; _actInv1.canceled += OnInv1Canceled; }
+            if (_actInv2 != null) { _actInv2.performed += OnInv2Performed; _actInv2.canceled += OnInv2Canceled; }
+            if (_actInv3 != null) { _actInv3.performed += OnInv3Performed; _actInv3.canceled += OnInv3Canceled; }
         }
 
         /// <summary>Unbind all handlers and clear cached intent values.</summary>
         public static void Unbind()                                    // Call when unloading or switching maps to clean up
         {
-            if (!_bound) return;                                       // If not currently bound, nothing to do
-            _bound = false;                                            // Mark unbound
+            if (!_bound) return;
+            _bound = false;
 
-            // For every non-null action, remove the exact handlers we added during Bind
             if (_actMove != null) { _actMove.started -= OnMoveStarted; _actMove.performed -= OnMovePerformed; _actMove.canceled -= OnMoveCanceled; }
             if (_actLook != null) { _actLook.performed -= OnLookPerformed; _actLook.canceled -= OnLookCanceled; }
             if (_actJump != null) { _actJump.started -= OnJumpStarted; _actJump.canceled -= OnJumpCanceled; }
@@ -249,241 +184,103 @@ namespace MothHunt.Input                          // Project namespace to avoid 
             if (_actInv2 != null) { _actInv2.performed -= OnInv2Performed; _actInv2.canceled -= OnInv2Canceled; }
             if (_actInv3 != null) { _actInv3.performed -= OnInv3Performed; _actInv3.canceled -= OnInv3Canceled; }
 
-            _map = null;                                               // Clear cached map reference
+            _map = null;
             _actMove = _actLook = _actJump = _actGlide = _actSprint = _actCrawl = _actClimb =
-            _actInteract = _actThrow = _actMenu = _actMapInv = _actCamouflage = _actInv1 = _actInv2 = _actInv3 = null; // Null all action refs
+            _actInteract = _actThrow = _actMenu = _actMapInv = _actCamouflage = _actInv1 = _actInv2 = _actInv3 = null;
 
             // Reset intents
-            Move = Look = Vector2.zero;                                // Clear last vectors
-            IsMoving = false;                                          // Not moving after unbind
-            JumpHeld = GlideHeld = SprintHeld = CrawlHeld = ClimbHeld = false; // Clear held states
-            InteractHeld = ThrowHeld = MenuHeld = MapInventoryHeld = CamouflageHeld = false; // Clear held states
-            Inv1Held = Inv2Held = Inv3Held = false;                    // Clear inventory holds
-            _jumpSupersededByGlide = false;                            // Reset jump/glide relation flag
+            Move = Look = Vector2.zero;
+            IsMoving = false;
+            JumpHeld = GlideHeld = SprintHeld = CrawlHeld = ClimbHeld = false;
+            InteractHeld = ThrowHeld = MenuHeld = MapInventoryHeld = CamouflageHeld = false;
+            Inv1Held = Inv2Held = Inv3Held = false;
+            _jumpSupersededByGlide = false;
+            IsGrounded = false;
         }
 
         // ----------------------------- Handlers ------------------------------
-        private static void OnMoveStarted(InputAction.CallbackContext _) => IsMoving = true; // Mark moving as soon as move starts
+        private static void OnMoveStarted(InputAction.CallbackContext _) => IsMoving = true;
 
-        private static void OnMovePerformed(InputAction.CallbackContext ctx) // Called when move value updates while active
+        private static void OnMovePerformed(InputAction.CallbackContext ctx)
         {
-            Move = ctx.ReadValue<Vector2>();                         // Read current Vector2 from the event context
-            IsMoving = Move.sqrMagnitude > 0.0001f;                  // True if not basically zero (cheap magnitude check)
+            Move = ctx.ReadValue<Vector2>();
+            IsMoving = Move.sqrMagnitude > 0.0001f;
         }
 
-        private static void OnMoveCanceled(InputAction.CallbackContext _)   // Called when move ends (stick neutral / keys up)
+        private static void OnMoveCanceled(InputAction.CallbackContext _)
         {
-            Move = Vector2.zero;                                     // Clear movement vector
-            IsMoving = false;                                        // No longer moving
+            Move = Vector2.zero;
+            IsMoving = false;
         }
 
-        private static void OnLookPerformed(InputAction.CallbackContext ctx) // Called when look value updates
+        private static void OnLookPerformed(InputAction.CallbackContext ctx) => Look = ctx.ReadValue<Vector2>();
+        private static void OnLookCanceled(InputAction.CallbackContext _) => Look = Vector2.zero;
+
+        // Jump: fire on key down; release on key up ó but skip release if Glide took over
+        private static void OnJumpStarted(InputAction.CallbackContext _)
         {
-            Look = ctx.ReadValue<Vector2>();                         // Read current look delta/axis
+            JumpHeld = true;
+            _jumpSupersededByGlide = false; // fresh press
+            OnJumpPressed?.Invoke();
         }
 
-        private static void OnLookCanceled(InputAction.CallbackContext _)   // Called when look ends/neutral
+        private static void OnJumpCanceled(InputAction.CallbackContext _)
         {
-            Look = Vector2.zero;                                     // Clear look vector
-        }
-
-        // Jump: fire on key down; release on key up ÅEbut skip release if Glide took over
-        private static void OnJumpStarted(InputAction.CallbackContext _)    // Jump press edge
-        {
-            JumpHeld = true;                                         // Mark jump as held
-            _jumpSupersededByGlide = false; // fresh press           // Reset glide-supersede state for this press
-            OnJumpPressed?.Invoke();                                 // Broadcast jump pressed to subscribers
-        }
-
-        private static void OnJumpCanceled(InputAction.CallbackContext _)   // Jump release edge
-        {
-            if (JumpHeld)                                            // Only if we actually considered it held
+            if (JumpHeld)
             {
-                JumpHeld = false;                                    // No longer holding jump
-                if (!_jumpSupersededByGlide)                         // If glide did NOT take over this press
-                    OnJumpReleased?.Invoke();                        // Broadcast jump release (avoid double-release when gliding)
+                JumpHeld = false;
+                if (!_jumpSupersededByGlide)
+                    OnJumpReleased?.Invoke();
             }
         }
 
-        private static void OnGlidePerformed(InputAction.CallbackContext _) // Glide engaged (e.g., hold satisfied)
+        private static void OnGlidePerformed(InputAction.CallbackContext _)
         {
-            GlideHeld = true;                                        // Mark glide as held
-            _jumpSupersededByGlide = true; // this press became a glide // Ensure jump release is suppressed for this cycle
-            OnGlidePressed?.Invoke();                                // Broadcast glide pressed
+            GlideHeld = true;
+            _jumpSupersededByGlide = true;   // this press became a glide
+            OnGlidePressed?.Invoke();
         }
 
-        private static void OnGlideCanceled(InputAction.CallbackContext _)  // Glide ended
+        private static void OnGlideCanceled(InputAction.CallbackContext _)
         {
-            if (GlideHeld)                                           // Only if we considered it held
+            if (GlideHeld)
             {
-                GlideHeld = false;                                   // Clear glide hold
-                OnGlideReleased?.Invoke();                           // Broadcast glide release
+                GlideHeld = false;
+                OnGlideReleased?.Invoke();
             }
         }
 
-        private static void OnSprintPerformed(InputAction.CallbackContext _) // Sprint engaged
-        {
-            SprintHeld = true;                                       // Mark sprint as held
-            OnSprintPressed?.Invoke();                               // Broadcast sprint pressed
-        }
+        private static void OnSprintPerformed(InputAction.CallbackContext _) { SprintHeld = true; OnSprintPressed?.Invoke(); }
+        private static void OnSprintCanceled(InputAction.CallbackContext _) { if (SprintHeld) { SprintHeld = false; OnSprintReleased?.Invoke(); } }
 
-        private static void OnSprintCanceled(InputAction.CallbackContext _) // Sprint ended
-        {
-            if (SprintHeld)                                          // Guard against duplicate cancels
-            {
-                SprintHeld = false;                                  // Clear sprint hold
-                OnSprintReleased?.Invoke();                          // Broadcast sprint release
-            }
-        }
+        private static void OnCrawlPerformed(InputAction.CallbackContext _) { CrawlHeld = true; OnCrawlPressed?.Invoke(); }
+        private static void OnCrawlCanceled(InputAction.CallbackContext _) { if (CrawlHeld) { CrawlHeld = false; OnCrawlReleased?.Invoke(); } }
 
-        private static void OnCrawlPerformed(InputAction.CallbackContext _) // Crawl engaged
-        {
-            CrawlHeld = true;                                        // Mark crawl as held
-            OnCrawlPressed?.Invoke();                                // Broadcast crawl pressed
-        }
+        private static void OnClimbPerformed(InputAction.CallbackContext _) { ClimbHeld = true; OnClimbPressed?.Invoke(); }
+        private static void OnClimbCanceled(InputAction.CallbackContext _) { if (ClimbHeld) { ClimbHeld = false; OnClimbReleased?.Invoke(); } }
 
-        private static void OnCrawlCanceled(InputAction.CallbackContext _)  // Crawl ended
-        {
-            if (CrawlHeld)                                           // Guard against duplicate cancels
-            {
-                CrawlHeld = false;                                   // Clear crawl hold
-                OnCrawlReleased?.Invoke();                           // Broadcast crawl release
-            }
-        }
+        private static void OnInteractPerformed(InputAction.CallbackContext _) { InteractHeld = true; OnInteractPressed?.Invoke(); }
+        private static void OnInteractCanceled(InputAction.CallbackContext _) { if (InteractHeld) { InteractHeld = false; OnInteractReleased?.Invoke(); } }
 
-        private static void OnClimbPerformed(InputAction.CallbackContext _) // Climb engaged
-        {
-            ClimbHeld = true;                                        // Mark climb as held
-            OnClimbPressed?.Invoke();                                // Broadcast climb pressed
-        }
+        private static void OnThrowPerformed(InputAction.CallbackContext _) { ThrowHeld = true; OnThrowPressed?.Invoke(); }
+        private static void OnThrowCanceled(InputAction.CallbackContext _) { if (ThrowHeld) { ThrowHeld = false; OnThrowReleased?.Invoke(); } }
 
-        private static void OnClimbCanceled(InputAction.CallbackContext _)  // Climb ended
-        {
-            if (ClimbHeld)                                           // Guard against duplicate cancels
-            {
-                ClimbHeld = false;                                   // Clear climb hold
-                OnClimbReleased?.Invoke();                           // Broadcast climb release
-            }
-        }
+        private static void OnMenuPerformed(InputAction.CallbackContext _) { MenuHeld = true; OnMenuPressed?.Invoke(); }
+        private static void OnMenuCanceled(InputAction.CallbackContext _) { if (MenuHeld) { MenuHeld = false; OnMenuReleased?.Invoke(); } }
 
-        private static void OnInteractPerformed(InputAction.CallbackContext _) // Interact engaged
-        {
-            InteractHeld = true;                                     // Mark interact as held
-            OnInteractPressed?.Invoke();                             // Broadcast interact pressed
-        }
+        private static void OnMapInventoryPerformed(InputAction.CallbackContext _) { MapInventoryHeld = true; OnMapInventoryPressed?.Invoke(); }
+        private static void OnMapInventoryCanceled(InputAction.CallbackContext _) { if (MapInventoryHeld) { MapInventoryHeld = false; OnMapInventoryReleased?.Invoke(); } }
 
-        private static void OnInteractCanceled(InputAction.CallbackContext _) // Interact ended
-        {
-            if (InteractHeld)                                        // Guard against duplicate cancels
-            {
-                InteractHeld = false;                                // Clear interact hold
-                OnInteractReleased?.Invoke();                        // Broadcast interact release
-            }
-        }
+        private static void OnCamouflagePerformed(InputAction.CallbackContext _) { CamouflageHeld = true; OnCamouflagePressed?.Invoke(); }
+        private static void OnCamouflageCanceled(InputAction.CallbackContext _) { if (CamouflageHeld) { CamouflageHeld = false; OnCamouflageReleased?.Invoke(); } }
 
-        private static void OnThrowPerformed(InputAction.CallbackContext _) // Throw engaged
-        {
-            ThrowHeld = true;                                        // Mark throw as held
-            OnThrowPressed?.Invoke();                                // Broadcast throw pressed
-        }
+        private static void OnInv1Performed(InputAction.CallbackContext _) { Inv1Held = true; OnInventorySlotOnePressed?.Invoke(); }
+        private static void OnInv1Canceled(InputAction.CallbackContext _) { if (Inv1Held) { Inv1Held = false; OnInventorySlotOneReleased?.Invoke(); } }
 
-        private static void OnThrowCanceled(InputAction.CallbackContext _)  // Throw ended
-        {
-            if (ThrowHeld)                                           // Guard against duplicate cancels
-            {
-                ThrowHeld = false;                                   // Clear throw hold
-                OnThrowReleased?.Invoke();                           // Broadcast throw release
-            }
-        }
+        private static void OnInv2Performed(InputAction.CallbackContext _) { Inv2Held = true; OnInventorySlotTwoPressed?.Invoke(); }
+        private static void OnInv2Canceled(InputAction.CallbackContext _) { if (Inv2Held) { Inv2Held = false; OnInventorySlotTwoReleased?.Invoke(); } }
 
-        private static void OnMenuPerformed(InputAction.CallbackContext _)  // Menu engaged
-        {
-            MenuHeld = true;                                         // Mark menu as held
-            OnMenuPressed?.Invoke();                                 // Broadcast menu pressed
-        }
-
-        private static void OnMenuCanceled(InputAction.CallbackContext _)   // Menu ended
-        {
-            if (MenuHeld)                                            // Guard against duplicate cancels
-            {
-                MenuHeld = false;                                    // Clear menu hold
-                OnMenuReleased?.Invoke();                            // Broadcast menu release
-            }
-        }
-
-        private static void OnMapInventoryPerformed(InputAction.CallbackContext _) // Map/Inventory engaged
-        {
-            MapInventoryHeld = true;                                 // Mark map/inventory as held
-            OnMapInventoryPressed?.Invoke();                         // Broadcast map/inventory pressed
-        }
-
-        private static void OnMapInventoryCanceled(InputAction.CallbackContext _)  // Map/Inventory ended
-        {
-            if (MapInventoryHeld)                                    // Guard against duplicate cancels
-            {
-                MapInventoryHeld = false;                            // Clear map/inventory hold
-                OnMapInventoryReleased?.Invoke();                    // Broadcast map/inventory release
-            }
-        }
-
-        private static void OnCamouflagePerformed(InputAction.CallbackContext _)   // Camouflage engaged
-        {
-            CamouflageHeld = true;                                   // Mark camouflage as held
-            OnCamouflagePressed?.Invoke();                           // Broadcast camouflage pressed
-        }
-
-        private static void OnCamouflageCanceled(InputAction.CallbackContext _)    // Camouflage ended
-        {
-            if (CamouflageHeld)                                      // Guard against duplicate cancels
-            {
-                CamouflageHeld = false;                              // Clear camouflage hold
-                OnCamouflageReleased?.Invoke();                      // Broadcast camouflage release
-            }
-        }
-
-        private static void OnInv1Performed(InputAction.CallbackContext _)         // Inventory slot 1 engaged
-        {
-            Inv1Held = true;                                         // Mark inv1 as held
-            OnInventorySlotOnePressed?.Invoke();                     // Broadcast inv1 pressed
-        }
-
-        private static void OnInv1Canceled(InputAction.CallbackContext _)          // Inventory slot 1 ended
-        {
-            if (Inv1Held)                                            // Guard against duplicate cancels
-            {
-                Inv1Held = false;                                    // Clear inv1 hold
-                OnInventorySlotOneReleased?.Invoke();                // Broadcast inv1 release
-            }
-        }
-
-        private static void OnInv2Performed(InputAction.CallbackContext _)         // Inventory slot 2 engaged
-        {
-            Inv2Held = true;                                         // Mark inv2 as held
-            OnInventorySlotTwoPressed?.Invoke();                     // Broadcast inv2 pressed
-        }
-
-        private static void OnInv2Canceled(InputAction.CallbackContext _)          // Inventory slot 2 ended
-        {
-            if (Inv2Held)                                            // Guard against duplicate cancels
-            {
-                Inv2Held = false;                                    // Clear inv2 hold
-                OnInventorySlotTwoReleased?.Invoke();                // Broadcast inv2 release
-            }
-        }
-
-        private static void OnInv3Performed(InputAction.CallbackContext _)         // Inventory slot 3 engaged
-        {
-            Inv3Held = true;                                         // Mark inv3 as held
-            OnInventorySlotThreePressed?.Invoke();                   // Broadcast inv3 pressed
-        }
-
-        private static void OnInv3Canceled(InputAction.CallbackContext _)          // Inventory slot 3 ended
-        {
-            if (Inv3Held)                                            // Guard against duplicate cancels
-            {
-                Inv3Held = false;                                    // Clear inv3 hold
-                OnInventorySlotThreeReleased?.Invoke();              // Broadcast inv3 release
-            }
-        }
+        private static void OnInv3Performed(InputAction.CallbackContext _) { Inv3Held = true; OnInventorySlotThreePressed?.Invoke(); }
+        private static void OnInv3Canceled(InputAction.CallbackContext _) { if (Inv3Held) { Inv3Held = false; OnInventorySlotThreeReleased?.Invoke(); } }
     }
 }

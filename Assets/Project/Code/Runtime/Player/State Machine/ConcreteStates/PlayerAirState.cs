@@ -1,17 +1,30 @@
+// PlayerAirState.cs
+using UnityEngine;
 using MothHunt.Input;
 
 public class PlayerAirState : PlayerState
 {
-    public PlayerAirState(PlayerMotor motor, PlayerStateMachine sm) : base(motor, sm) { }
+    private float _smoothVel;
+
+    public PlayerAirState(PlayerMotor motor, PlayerStateMachine sm, PlayerAnimator anim) : base(motor, sm, anim) { }
 
     public override void EnterState()
     {
-        motor.Mode_AirMove();          // horizontal air control, normal gravity
-        motor.SetHorizontalInput(0f);
+        var col = motor.GetComponent<SimpleCapsuleResizer>();
+        if (col) col.Stand();
+
+        motor.Mode_AirMove();
+        anim.PlayAir();
     }
 
     public override void FrameUpdate()
     {
+        float m = motor.SprintMomentum;
+        float target = Mathf.Lerp(motor.walkSpeed, motor.sprintSpeed, m);
+
+        motor.airMoveSpeed = Mathf.SmoothDamp(motor.airMoveSpeed, target, ref _smoothVel, 0.08f);
+        motor.ApplyAirMoveCap();
+
         var mv = PlayerInputRouter.Move;
         motor.SetHorizontalInput(mv.x);
     }

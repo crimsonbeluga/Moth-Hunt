@@ -25,27 +25,29 @@ public class PlayerPlatformPass : MonoBehaviour
     public bool IsIgnoring(Collider c) => c && _ignored.Contains(c);
 
     // === Up-through: ignore until feet above target Y ===
-    public void PassUpThrough(Collider platformCol, float targetYWorld)
+    public bool PassUpThrough(Collider platformCol, float targetYWorld)
     {
-        if (!platformCol) { if (debug) Debug.LogWarning("[PPP] PassUpThrough: null collider"); return; }
-        if (_ignored.Contains(platformCol)) { if (debug) Debug.Log("[PPP] PassUpThrough: already ignoring"); return; }
+        if (!platformCol) { if (debug) Debug.LogWarning("[PPP] PassUpThrough: null collider"); return false; }
+        if (_ignored.Contains(platformCol)) { if (debug) Debug.Log("[PPP] PassUpThrough: already ignoring"); return false; }
 
         if (debug) Debug.Log($"[PPP] PassUpThrough START → '{platformCol.name}' until feetY > {targetYWorld + crossBuffer:F3}", this);
         Physics.IgnoreCollision(_playerCol, platformCol, true);
         _ignored.Add(platformCol);
         StartCoroutine(ReEnableWhenAbove(platformCol, targetYWorld + crossBuffer));
+        return true;
     }
 
     // === Down-through: ignore for a short time ===
-    public void DropDownThrough(Collider platformCol, float duration = 0.25f)
+    public bool DropDownThrough(Collider platformCol, float duration = 0.25f)
     {
-        if (!platformCol) { if (debug) Debug.LogWarning("[PPP] DropDownThrough: null collider"); return; }
-        if (_ignored.Contains(platformCol)) { if (debug) Debug.Log("[PPP] DropDownThrough: already ignoring"); return; }
+        if (!platformCol) { if (debug) Debug.LogWarning("[PPP] DropDownThrough: null collider"); return false; }
+        if (_ignored.Contains(platformCol)) { if (debug) Debug.Log("[PPP] DropDownThrough: already ignoring"); return false; }
 
         if (debug) Debug.Log($"[PPP] DropDownThrough START → '{platformCol.name}' for {duration:F2}s", this);
         Physics.IgnoreCollision(_playerCol, platformCol, true);
         _ignored.Add(platformCol);
         StartCoroutine(ReEnableAfterDelay(platformCol, duration));
+        return true;
     }
 
     IEnumerator ReEnableWhenAbove(Collider c, float yThreshold)
