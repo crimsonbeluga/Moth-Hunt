@@ -6,20 +6,17 @@ public class CameraController : MonoBehaviour
     public static CameraController Instance { get; private set; }
 
     [SerializeField] private Transform target;
+    [SerializeField] private CamSettings camSettings;
 
-    [SerializeField]
-    private CamSettings camSettings;
-
-    private CamSettings defaultCamSettings = new CamSettings
+    private static readonly CamSettings DefaultCamSettings = new CamSettings
     {
         moveDampening = 0.1f,
         rotationDampening = 0.1f,
         distance = 10f,
-        offsetY = 2f,
-        offsetX = 0f,
-        maxLookOffsetX = 1f,
-        maxLookOffsetY = 1f
+        offset = new Vector2(0f, 2f),
+        maxLookOffset = new Vector2(1f, 1f)
     };
+
     [SerializeField] private float minYaw = -20f;
     [SerializeField] private float maxYaw = 20f;
 
@@ -31,11 +28,11 @@ public class CameraController : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
             return;
         }
         Instance = this;
-        camSettings = defaultCamSettings;
+        camSettings = DefaultCamSettings;
     }
 
     private void LateUpdate()
@@ -43,28 +40,38 @@ public class CameraController : MonoBehaviour
         if (target == null)
             return;
 
-        //position
-        Vector3 desiredPosition = target.position
-            + Vector3.up * camSettings.offsetY
-            + Vector3.right * camSettings.offsetX
-            - target.forward * camSettings.distance;
+        UpdatePosition();
+        UpdateRotation();
+    }
 
-        //move to pos
-        transform.position = Vector3.SmoothDamp(
+    // update position
+    private void UpdatePosition()
+    {
+        Vector3 desiredPosition =
+            target.position + Vector3.up * camSettings.offset.y //figure out verticality
+            + Vector3.right * camSettings.offset.x //figure out where to place camera horizontally
+            - target.forward * camSettings.distance; //distance behind the target
+
+        transform.position = Vector3.SmoothDamp( //smooth move camera to desired position
             transform.position,
             desiredPosition,
             ref currentVelocity,
             camSettings.moveDampening
         );
+    }
 
-        // calc yaw
+    private void UpdateRotation()
+    {
+        // Calculate the desired yaw based on the target's position
         Vector3 lookDir = target.position - transform.position;
+
+        //figure out the yaw
         float desiredYaw = Mathf.Atan2(lookDir.x, lookDir.z) * Mathf.Rad2Deg;
 
-        //no flip
+        //clamp to prevent weird behavior
         desiredYaw = Mathf.Clamp(desiredYaw, minYaw, maxYaw);
 
-        // smooth rot
+        // smooth interpolate cause looks nice
         currentYaw = Mathf.SmoothDampAngle(
             currentYaw,
             desiredYaw,
@@ -72,35 +79,35 @@ public class CameraController : MonoBehaviour
             camSettings.rotationDampening
         );
 
-        Quaternion targetRotation = Quaternion.Euler(0f, currentYaw, 0f);
-        transform.rotation = targetRotation;
+        // Apply the rotation
+        transform.rotation = Quaternion.Euler(0f, currentYaw, 0f);
     }
 
+    //sets what to point the camera at
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
     }
 
+    //resets camera settings to default
     public void ResetToDefaultSettings()
     {
-        camSettings = defaultCamSettings;
+        camSettings = DefaultCamSettings;
     }
 
+    //sets new camera settings
     public void SetCamSettings(CamSettings newSettings)
     {
         camSettings = newSettings;
     }
 }
 
-// parameters that control/effect camera behavior
 [Serializable]
 public struct CamSettings
 {
     public float moveDampening;
     public float rotationDampening;
     public float distance;
-    public float offsetY;
-    public float offsetX;
-    public float maxLookOffsetX;
-    public float maxLookOffsetY;
+    public Vector2 offset;
+    public Vector2 maxLookOffset;
 }
