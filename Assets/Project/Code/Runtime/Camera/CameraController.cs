@@ -1,3 +1,4 @@
+using MothHunt.Input;
 using System;
 using UnityEngine;
 
@@ -42,6 +43,8 @@ public class CameraController : MonoBehaviour
     private float currentYawVelocity;
     private float currentYaw;
 
+    Vector2 accumulatedLookInput;
+    Vector2 lookOffset;
     public Vector2 tempOffSet
     {
         get => camSettings.tempOffset;
@@ -63,9 +66,19 @@ public class CameraController : MonoBehaviour
     {
         if (target == null)
             return;
-
+        UpdateLookOffset();
         UpdatePosition();
         UpdateRotation();
+    }
+
+    //process look input
+    void UpdateLookOffset()
+    {
+        accumulatedLookInput += PlayerInputRouter.Look;
+
+        accumulatedLookInput.x = Mathf.Clamp(accumulatedLookInput.x, -camSettings.maxLookOffset.x * 10, camSettings.maxLookOffset.x * 10);
+        accumulatedLookInput.y = Mathf.Clamp(accumulatedLookInput.y, -camSettings.maxLookOffset.y * 10, camSettings.maxLookOffset.y * 10);
+        lookOffset = accumulatedLookInput / 10;
     }
 
     // update position
@@ -77,6 +90,10 @@ public class CameraController : MonoBehaviour
             - target.forward * camSettings.distance //distance behind the target
             + new Vector3(tempOffSet.x, tempOffSet.y, 0f); //apply tempOffSet
 
+        //shift based on look
+        desiredPosition.x += lookOffset.x;
+        desiredPosition.y += lookOffset.y;
+
         transform.position = Vector3.SmoothDamp( //smooth move camera to desired position
             transform.position,
             desiredPosition,
@@ -87,25 +104,22 @@ public class CameraController : MonoBehaviour
 
     private void UpdateRotation()
     {
-        // Calculate the desired yaw based on the target's position
-        Vector3 lookDir = (target.position + new Vector3(tempOffSet.x, tempOffSet.y, 0f)) - transform.position; //apply tempOffSet
+        // shift target position based on look
+        Vector3 effectivePosition = target.position + new Vector3(lookOffset.x, lookOffset.y, 0f);
 
-        //figure out the yaw
-        float desiredYaw = Mathf.Atan2(lookDir.x, lookDir.z) * Mathf.Rad2Deg;
+        Vector3 direction = effectivePosition - transform.position;
 
-        //clamp to prevent weird behavior
-        desiredYaw = Mathf.Clamp(desiredYaw, minYaw, maxYaw);
+        // Get the rotation that looks at the effective position
+        Quaternion lookRotation = Quaternion.LookRotation(direction, Vector3.up);
 
-        // smooth interpolate cause looks nice
-        currentYaw = Mathf.SmoothDampAngle(
-            currentYaw,
-            desiredYaw,
-            ref currentYawVelocity,
-            camSettings.rotationDampening
-        );
+        // Convert to Euler angles and round each to nearest 90 degrees
+        Vector3 euler = lookRotation.eulerAngles;
+        euler.x = Mathf.Round(euler.x / 90f) * 90f;
+        euler.y = Mathf.Round(euler.y / 90f) * 90f;
+        euler.z = Mathf.Round(euler.z / 90f) * 90f;
 
-        // Apply the rotation
-        transform.rotation = Quaternion.Euler(0f, currentYaw, 0f);
+        // Apply the rounded rotation
+        transform.rotation = Quaternion.Euler(euler);
     }
 
     //sets what to point the camera at
