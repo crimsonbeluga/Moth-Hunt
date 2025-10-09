@@ -130,8 +130,16 @@ public class EnemyBrain : MonoBehaviour
         }
 
 
-        //if player within line of sight or recieved noise
-        //suspicion++
+        //if player enter line of sight
+        //
+        if(_motor.patrolSpeed < 0f) Physics.Raycast(this.transform.position, -this.transform.right, out _hit, _lineOfSightRange);
+        else Physics.Raycast(this.transform.position, this.transform.right, out _hit, _lineOfSightRange);
+
+        if (_hit.transform == playerCharacterController.transform)
+        {   
+            _suspicion += 15;
+            //_isChasing = true;
+        }
 
 
         //set suspicion levels
@@ -147,11 +155,6 @@ public class EnemyBrain : MonoBehaviour
             _isAlertedThreshold = false;
         }
 
-        //if player enter line of sight
-        //set _isChasing = true
-        Physics.Raycast(this.transform.position, this.transform.right, out _hit, _lineOfSightRange);
-
-        
 
         // if reach alerted state
         if (_isAlertedThreshold)
@@ -245,17 +248,15 @@ public class EnemyBrain : MonoBehaviour
 
     }
     
-    //Unknown purpose to Shan
+    //Determine the current state and checks against which states are inactive
     private bool Is<T>() where T : EnemyState => StateMachine.CurrentEnemyState is T;
 
     //pseudo decision making, ensuring the sprite flips properly.
     public void SetPatrolDirection()
     {
-        Mathf.Abs(_motor.patrolSpeed);
+        _motor.patrolSpeed = Mathf.Abs(_motor.patrolSpeed);
         if (_patrolRoute[_patrolInt].transform.position.x < this.transform.position.x)
         {
-            
-            
             _motor.patrolSpeed *= -1;
         }
 

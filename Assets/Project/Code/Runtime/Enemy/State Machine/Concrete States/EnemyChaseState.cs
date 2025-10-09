@@ -10,18 +10,22 @@ public class EnemyChaseState : EnemyState
     {
         motor.Mode_Chase();
         motor.SetHorizontalInput(0f);
+        Debug.Log("Chase Entered.");
     }
 
     public override void FrameUpdate()
     {
+        motor.SetHorizontalInput(motor.chaseSpeed);
         /*  ** PSEUDO CODE ** 
          *  //move to last player location
+         * 
          *  
          */
     }
 
     public override void ExitState() 
     {
-        
+        motor.SetHorizontalInput(0f);
+        motor.ZeroHorizontal();
     }
 }
