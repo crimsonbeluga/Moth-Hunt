@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Project/Code/Runtime/Components.meta
+guid: ddff7e519c2b65d41802bf409007a17e
+========
 guid: 8b50a38241ec6854fa046010641dadd0
+>>>>>>>> origin/develop:Assets/Project/Art/Characters_2D/Player Moth/Animation.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
