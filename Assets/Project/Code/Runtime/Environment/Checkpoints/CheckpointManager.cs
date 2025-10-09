@@ -4,7 +4,7 @@ using UnityEngine;
 [ExecuteAlways]
 public class CheckpointManager : MonoBehaviour
 {
-    [Tooltip("List of checkpoints, make sure it is in order!")]
+    [Tooltip("List of checkpoints, make sure it is in order! Checkpoints as a child of Checkpoints (Object) is automatically added")]
     public List<Checkpoint> checkpoints;
     public Checkpoint currentCheckpoint;
 
