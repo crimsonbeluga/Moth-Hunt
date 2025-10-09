@@ -1,4 +1,4 @@
-﻿// PlayerMotor.cs
+﻿// Runtime/Player/PlayerMotor.cs
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using MothHunt.Input;   // so we can set PlayerInputRouter.IsGrounded
@@ -367,6 +367,28 @@ public class PlayerMotor : MonoBehaviour
     {
         if (useZForHorizontal) _velocity.z = 0f;
         else _velocity.x = 0f;
+    }
+
+    // --- NEW: called by PlayerDeathManager after teleport to clear state/locks ---
+    public void ZeroVelocity()
+    {
+        _velocity = Vector3.zero;
+        if (useZForHorizontal) _velocity.x = 0f; else _velocity.z = 0f;
+    }
+
+    // --- NEW: full reset for consistent post-respawn behaviour ---
+    public void ResetForRespawn()
+    {
+        _desiredX = 0f;
+        _desiredY = 0f;
+        _climbMode = false;
+        _glideMode = false;
+        _sprintMomentum = 0f;
+        _passGrantedThisFrame = false;
+        _inputLockUntil = -999f;   // release any external input locks
+
+        ZeroVelocity();
+        Mode_Walk();               // normal gravity/terminal + walk caps
     }
 
     private string DumpState()
