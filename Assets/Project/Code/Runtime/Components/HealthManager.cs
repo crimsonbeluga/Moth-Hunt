@@ -19,7 +19,7 @@ public abstract class HealthManager : MonoBehaviour
 
 
     // Internal
-    protected float _currentHealth;
+    public float _currentHealth; // Current health value
     protected float _currentRegenRate;
     protected float _currentRegenDelay;
 
@@ -60,7 +60,7 @@ public abstract class HealthManager : MonoBehaviour
         set
         {
             _currentHealth = Mathf.Clamp(value, 0f, maxHealth);
-            Debug.Log("Current Health: " + _currentHealth);
+            //Debug.Log("Current Health: " + _currentHealth);
 
             if (_currentHealth <= 0f)
             {
@@ -99,6 +99,11 @@ public abstract class HealthManager : MonoBehaviour
         if (amount <= 0f) return; // Ignore non-positive heal values
         CurrentHealth += amount; // Healing beyond maxHealth is clamped in the setter of CurrentHealth
         HealEffect();
+    }
+
+    public virtual void ResetHealth()
+    {
+        CurrentHealth = maxHealth;
     }
 
     public abstract void HurtEffect(); // Override this method in derived classes to implement specific hurt effects

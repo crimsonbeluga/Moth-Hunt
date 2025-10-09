@@ -3,20 +3,21 @@ using UnityEngine;
 public class CheckpointTrigger : MonoBehaviour
 {
     [Header("Dependencies")]
-    [Tooltip("Reference to the CheckpointManager that handles checkpoint logic")]
-    public CheckpointManager checkpointManager;
     [Tooltip("Collider that acts as the trigger area for the checkpoint")]
     public Collider triggerCollider;
     [Tooltip("Reference to the Checkpoint this trigger is associated with")]
     public Checkpoint checkpoint;
 
+    // Reference to the CheckpointManager that handles checkpoint logic
+    private CheckpointManager _checkpointManager;
+
     // ------------------------------------------------------------------
 
     void Start()
     {
-        if (checkpointManager == null)
+        if (_checkpointManager == null)
         {
-            Debug.LogError("CheckpointManager component not found on " + gameObject.name);
+            _checkpointManager = FindFirstObjectByType<CheckpointManager>();
         }
 
         if (triggerCollider == null)
@@ -47,7 +48,7 @@ public class CheckpointTrigger : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             // Set the current checkpoint in the CheckpointManager
-            checkpointManager.SetCheckpoint(checkpoint);
+            _checkpointManager.SetCurrentCheckpoint(checkpoint);
             Debug.Log("Checkpoint reached: " + checkpoint.name);
         }
     }
