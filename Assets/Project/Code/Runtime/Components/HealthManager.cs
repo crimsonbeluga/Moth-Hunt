@@ -19,7 +19,7 @@ public abstract class HealthManager : MonoBehaviour
 
 
     // Internal
-    public float _currentHealth; // Current health value
+    protected float _currentHealth; // Current health value
     protected float _currentRegenRate;
     protected float _currentRegenDelay;
 
