@@ -8,6 +8,8 @@ public class EnemyAttackState : EnemyState
 
     public override void EnterState()
     {
+        motor.Mode_Chase();
+        motor.SetHorizontalInput(0f);
         //Set movement to 0f
         /* ** PSEUDO CODE **
          * 

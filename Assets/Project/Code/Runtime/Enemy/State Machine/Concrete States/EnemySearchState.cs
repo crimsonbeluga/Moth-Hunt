@@ -14,6 +14,7 @@ public class EnemySearchState : EnemyState
 
     public override void FrameUpdate()
     {
+        motor.SetHorizontalInput(motor.searchSpeed);
         /*
          * 
          */

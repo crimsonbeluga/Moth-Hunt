@@ -14,13 +14,7 @@ public class EnemyAlertedState : EnemyState
 
     public override void FrameUpdate()
     {
-        /* ** PSEUDO CODE **
-         * Check for Player.CharacterController
-         * if (spotted) {increase aggression}
-         * else
-         * {reduce agression}
-         * 
-         */
+        //motor.SetHorizontalInput(motor.patrolSpeed / 2);
     }
 
     public override void ExitState() 
