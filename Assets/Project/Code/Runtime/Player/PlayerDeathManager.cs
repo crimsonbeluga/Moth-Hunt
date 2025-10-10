@@ -18,7 +18,6 @@ public class PlayerDeathManager : DeathManager
         Debug.LogWarning("Player has died. Implement respawn or game over logic here.");
         // Can put animation , sound effects, etc. here. Probably put in another method and call it here.
 
-        //GetComponentInParent<Transform>().position
         Vector3 deathPosition = transform.position;
         Vector3 checkpointPosition = _checkpointManager.GetCurrentCheckpoint().transform.position;
 
@@ -27,12 +26,16 @@ public class PlayerDeathManager : DeathManager
         Debug.Log("Respawn Position: " + checkpointPosition);
         Debug.Log("Player Position Before Respawn: " + deathPosition);
 
-        // Respawn at the last checkpoint
-        GetComponentInParent<Transform>().position = checkpointPosition;
+        // If we didn't have this while loop, it would return player to where they died.
+        while (GetComponentInParent<Transform>().position != checkpointPosition)
+        {
+            // Respawn at the last checkpoint
+            GetComponentInParent<Transform>().position = checkpointPosition;
+        }
+        
         _healthManager.ResetHealth();
 
         // Log the new position for verification
         Debug.Log("Player Position After Respawn: " + GetComponentInParent<Transform>().position);
-        
     }
 }

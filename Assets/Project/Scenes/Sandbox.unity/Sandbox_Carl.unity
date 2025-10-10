@@ -953,7 +953,6 @@ MonoBehaviour:
   maxHealth: 100
   regenRate: 0
   regenDelay: 5
-  _currentHealth: 0
 --- !u!114 &354519522
 MonoBehaviour:
   m_ObjectHideFlags: 0

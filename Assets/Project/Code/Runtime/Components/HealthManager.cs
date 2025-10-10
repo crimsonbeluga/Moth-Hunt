@@ -16,8 +16,6 @@ public abstract class HealthManager : MonoBehaviour
     [Tooltip("How many seconds after taking damage for regen begins")]
     [Min(0f)] public float regenDelay = 5f;
 
-
-
     // Internal
     protected float _currentHealth; // Current health value
     protected float _currentRegenRate;
