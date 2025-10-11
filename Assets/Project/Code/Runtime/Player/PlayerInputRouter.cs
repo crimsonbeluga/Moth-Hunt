@@ -33,11 +33,11 @@ namespace MothHunt.Input                          // Project namespace to avoid 
         /// <summary>True while player intends an all-fours pose (sprint or crawl held).</summary>
         public static bool AllFoursIntent => SprintHeld || CrawlHeld;  // Derived convenience flag
 
-        // ---------- NEW: simple edge queries we need for Throw & cancels ----------
-        public static bool ThrowPressedThisFrame => _actThrow != null && _actThrow.WasPressedThisFrame();
-        public static bool ClimbPressedThisFrame => _actClimb != null && _actClimb.WasPressedThisFrame();
+        // ---------- Edge queries ----------
+        public static bool ThrowPressedThisFrame => !IsInputBlocked && _actThrow != null && _actThrow.WasPressedThisFrame();
+        public static bool ClimbPressedThisFrame => !IsInputBlocked && _actClimb != null && _actClimb.WasPressedThisFrame();
 
-        // ---------- NEW: motor sets this each frame so everyone agrees on grounding ----------
+        // ---------- Motor sets this each frame so everyone agrees on grounding ----------
         public static bool IsGrounded { get; set; }
 
         // --------------------------- Events (edges) ---------------------------
@@ -102,7 +102,7 @@ namespace MothHunt.Input                          // Project namespace to avoid 
         private static bool _jumpSupersededByGlide;             // Flag to suppress JumpReleased if Glide took over
 
         public static bool InteractPressedThisFrame
-            => _actInteract != null && _actInteract.WasPressedThisFrame();
+            => !IsInputBlocked && _actInteract != null && _actInteract.WasPressedThisFrame();
 
         private static InputActionMap _map;                     // Cached reference to the bound InputActionMap (e.g., "Player")
 
@@ -111,6 +111,65 @@ namespace MothHunt.Input                          // Project namespace to avoid 
             _actMove, _actLook, _actJump, _actGlide, _actSprint, _actCrawl, _actClimb,
             _actInteract, _actThrow, _actMenu, _actMapInv, _actCamouflage,
             _actInv1, _actInv2, _actInv3;
+
+        // ---------- Global input blocking (NEW) ----------
+        private static float _blockedUntil = -1f;    // time until which inputs are blocked
+        private static bool _hardBlocked = false;    // for indefinite blocks
+
+        /// <summary>True while inputs should be ignored (time-based OR hard switch).</summary>
+        public static bool IsInputBlocked => _hardBlocked || Time.time < _blockedUntil;
+
+        /// <summary>
+        /// Disable all input.
+        /// seconds &lt; 0  => block indefinitely (until EnableAllInput is called)
+        /// seconds &gt;= 0 => block for the given duration
+        /// </summary>
+        public static void DisableAllInput(float seconds = -1f)
+        {
+            if (seconds < 0f)
+            {
+                _hardBlocked = true;
+                _blockedUntil = -1f;
+            }
+            else
+            {
+                _blockedUntil = Mathf.Max(_blockedUntil, Time.time + Mathf.Max(0f, seconds));
+            }
+            ClearIntents(); // zero everything immediately
+        }
+
+        /// <summary>Re-enable input immediately (clears both timed & indefinite blocks).</summary>
+        public static void EnableAllInput()
+        {
+            _hardBlocked = false;
+            _blockedUntil = -1f;
+            // Intents will update from the next input events naturally.
+        }
+
+        /// <summary>Immediately zero every exposed intent/held flag (no events fired).</summary>
+        private static void ClearIntents()
+        {
+            Move = Look = Vector2.zero;
+            IsMoving = false;
+
+            JumpHeld = GlideHeld = SprintHeld = CrawlHeld = ClimbHeld = false;
+            InteractHeld = ThrowHeld = MenuHeld = MapInventoryHeld = CamouflageHeld = false;
+            Inv1Held = Inv2Held = Inv3Held = false;
+
+            _jumpSupersededByGlide = false;
+            // IsGrounded is authored by Motor; we don't touch it.
+        }
+
+        /// <summary>
+        /// Call at the START of each input handler. If blocked, zero intents & skip processing.
+        /// </summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private static bool GateBlocked()
+        {
+            if (!IsInputBlocked) return false;
+            ClearIntents();
+            return true;
+        }
 
         /// <summary>Preferred entry point: bind using the generated wrapper.</summary>
         public static void Bind(MothHuntInput.PlayerActions actions)   // Overload that accepts the generated wrapper's PlayerActions
@@ -199,26 +258,42 @@ namespace MothHunt.Input                          // Project namespace to avoid 
         }
 
         // ----------------------------- Handlers ------------------------------
-        private static void OnMoveStarted(InputAction.CallbackContext _) => IsMoving = true;
+        private static void OnMoveStarted(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            IsMoving = true;
+        }
 
         private static void OnMovePerformed(InputAction.CallbackContext ctx)
         {
+            if (GateBlocked()) return;
             Move = ctx.ReadValue<Vector2>();
             IsMoving = Move.sqrMagnitude > 0.0001f;
         }
 
         private static void OnMoveCanceled(InputAction.CallbackContext _)
         {
+            if (GateBlocked()) return;
             Move = Vector2.zero;
             IsMoving = false;
         }
 
-        private static void OnLookPerformed(InputAction.CallbackContext ctx) => Look = ctx.ReadValue<Vector2>();
-        private static void OnLookCanceled(InputAction.CallbackContext _) => Look = Vector2.zero;
+        private static void OnLookPerformed(InputAction.CallbackContext ctx)
+        {
+            if (GateBlocked()) return;
+            Look = ctx.ReadValue<Vector2>();
+        }
+
+        private static void OnLookCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            Look = Vector2.zero;
+        }
 
         // Jump: fire on key down; release on key up — but skip release if Glide took over
         private static void OnJumpStarted(InputAction.CallbackContext _)
         {
+            if (GateBlocked()) return;
             JumpHeld = true;
             _jumpSupersededByGlide = false; // fresh press
             OnJumpPressed?.Invoke();
@@ -226,6 +301,7 @@ namespace MothHunt.Input                          // Project namespace to avoid 
 
         private static void OnJumpCanceled(InputAction.CallbackContext _)
         {
+            if (GateBlocked()) return;
             if (JumpHeld)
             {
                 JumpHeld = false;
@@ -236,6 +312,7 @@ namespace MothHunt.Input                          // Project namespace to avoid 
 
         private static void OnGlidePerformed(InputAction.CallbackContext _)
         {
+            if (GateBlocked()) return;
             GlideHeld = true;
             _jumpSupersededByGlide = true;   // this press became a glide
             OnGlidePressed?.Invoke();
@@ -243,6 +320,7 @@ namespace MothHunt.Input                          // Project namespace to avoid 
 
         private static void OnGlideCanceled(InputAction.CallbackContext _)
         {
+            if (GateBlocked()) return;
             if (GlideHeld)
             {
                 GlideHeld = false;
@@ -250,37 +328,191 @@ namespace MothHunt.Input                          // Project namespace to avoid 
             }
         }
 
-        private static void OnSprintPerformed(InputAction.CallbackContext _) { SprintHeld = true; OnSprintPressed?.Invoke(); }
-        private static void OnSprintCanceled(InputAction.CallbackContext _) { if (SprintHeld) { SprintHeld = false; OnSprintReleased?.Invoke(); } }
+        private static void OnSprintPerformed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            SprintHeld = true;
+            OnSprintPressed?.Invoke();
+        }
 
-        private static void OnCrawlPerformed(InputAction.CallbackContext _) { CrawlHeld = true; OnCrawlPressed?.Invoke(); }
-        private static void OnCrawlCanceled(InputAction.CallbackContext _) { if (CrawlHeld) { CrawlHeld = false; OnCrawlReleased?.Invoke(); } }
+        private static void OnSprintCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (SprintHeld)
+            {
+                SprintHeld = false;
+                OnSprintReleased?.Invoke();
+            }
+        }
 
-        private static void OnClimbPerformed(InputAction.CallbackContext _) { ClimbHeld = true; OnClimbPressed?.Invoke(); }
-        private static void OnClimbCanceled(InputAction.CallbackContext _) { if (ClimbHeld) { ClimbHeld = false; OnClimbReleased?.Invoke(); } }
+        private static void OnCrawlPerformed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            CrawlHeld = true;
+            OnCrawlPressed?.Invoke();
+        }
 
-        private static void OnInteractPerformed(InputAction.CallbackContext _) { InteractHeld = true; OnInteractPressed?.Invoke(); }
-        private static void OnInteractCanceled(InputAction.CallbackContext _) { if (InteractHeld) { InteractHeld = false; OnInteractReleased?.Invoke(); } }
+        private static void OnCrawlCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (CrawlHeld)
+            {
+                CrawlHeld = false;
+                OnCrawlReleased?.Invoke();
+            }
+        }
 
-        private static void OnThrowPerformed(InputAction.CallbackContext _) { ThrowHeld = true; OnThrowPressed?.Invoke(); }
-        private static void OnThrowCanceled(InputAction.CallbackContext _) { if (ThrowHeld) { ThrowHeld = false; OnThrowReleased?.Invoke(); } }
+        private static void OnClimbPerformed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            ClimbHeld = true;
+            OnClimbPressed?.Invoke();
+        }
 
-        private static void OnMenuPerformed(InputAction.CallbackContext _) { MenuHeld = true; OnMenuPressed?.Invoke(); }
-        private static void OnMenuCanceled(InputAction.CallbackContext _) { if (MenuHeld) { MenuHeld = false; OnMenuReleased?.Invoke(); } }
+        private static void OnClimbCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (ClimbHeld)
+            {
+                ClimbHeld = false;
+                OnClimbReleased?.Invoke();
+            }
+        }
 
-        private static void OnMapInventoryPerformed(InputAction.CallbackContext _) { MapInventoryHeld = true; OnMapInventoryPressed?.Invoke(); }
-        private static void OnMapInventoryCanceled(InputAction.CallbackContext _) { if (MapInventoryHeld) { MapInventoryHeld = false; OnMapInventoryReleased?.Invoke(); } }
+        private static void OnInteractPerformed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            InteractHeld = true;
+            OnInteractPressed?.Invoke();
+        }
 
-        private static void OnCamouflagePerformed(InputAction.CallbackContext _) { CamouflageHeld = true; OnCamouflagePressed?.Invoke(); }
-        private static void OnCamouflageCanceled(InputAction.CallbackContext _) { if (CamouflageHeld) { CamouflageHeld = false; OnCamouflageReleased?.Invoke(); } }
+        private static void OnInteractCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (InteractHeld)
+            {
+                InteractHeld = false;
+                OnInteractReleased?.Invoke();
+            }
+        }
 
-        private static void OnInv1Performed(InputAction.CallbackContext _) { Inv1Held = true; OnInventorySlotOnePressed?.Invoke(); }
-        private static void OnInv1Canceled(InputAction.CallbackContext _) { if (Inv1Held) { Inv1Held = false; OnInventorySlotOneReleased?.Invoke(); } }
+        private static void OnThrowPerformed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            ThrowHeld = true;
+            OnThrowPressed?.Invoke();
+        }
 
-        private static void OnInv2Performed(InputAction.CallbackContext _) { Inv2Held = true; OnInventorySlotTwoPressed?.Invoke(); }
-        private static void OnInv2Canceled(InputAction.CallbackContext _) { if (Inv2Held) { Inv2Held = false; OnInventorySlotTwoReleased?.Invoke(); } }
+        private static void OnThrowCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (ThrowHeld)
+            {
+                ThrowHeld = false;
+                OnThrowReleased?.Invoke();
+            }
+        }
 
-        private static void OnInv3Performed(InputAction.CallbackContext _) { Inv3Held = true; OnInventorySlotThreePressed?.Invoke(); }
-        private static void OnInv3Canceled(InputAction.CallbackContext _) { if (Inv3Held) { Inv3Held = false; OnInventorySlotThreeReleased?.Invoke(); } }
+        private static void OnMenuPerformed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            MenuHeld = true;
+            OnMenuPressed?.Invoke();
+        }
+
+        private static void OnMenuCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (MenuHeld)
+            {
+                MenuHeld = false;
+                OnMenuReleased?.Invoke();
+            }
+        }
+
+        private static void OnMapInventoryPerformed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            MapInventoryHeld = true;
+            OnMapInventoryPressed?.Invoke();
+        }
+
+        private static void OnMapInventoryCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (MapInventoryHeld)
+            {
+                MapInventoryHeld = false;
+                OnMapInventoryReleased?.Invoke();
+            }
+        }
+
+        private static void OnCamouflagePerformed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            CamouflageHeld = true;
+            OnCamouflagePressed?.Invoke();
+        }
+
+        private static void OnCamouflageCanceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (CamouflageHeld)
+            {
+                CamouflageHeld = false;
+                OnCamouflageReleased?.Invoke();
+            }
+        }
+
+        private static void OnInv1Performed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            Inv1Held = true;
+            OnInventorySlotOnePressed?.Invoke();
+        }
+
+        private static void OnInv1Canceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (Inv1Held)
+            {
+                Inv1Held = false;
+                OnInventorySlotOneReleased?.Invoke();
+            }
+        }
+
+        private static void OnInv2Performed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            Inv2Held = true;
+            OnInventorySlotTwoPressed?.Invoke();
+        }
+
+        private static void OnInv2Canceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (Inv2Held)
+            {
+                Inv2Held = false;
+                OnInventorySlotTwoReleased?.Invoke();
+            }
+        }
+
+        private static void OnInv3Performed(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            Inv3Held = true;
+            OnInventorySlotThreePressed?.Invoke();
+        }
+
+        private static void OnInv3Canceled(InputAction.CallbackContext _)
+        {
+            if (GateBlocked()) return;
+            if (Inv3Held)
+            {
+                Inv3Held = false;
+                OnInventorySlotThreeReleased?.Invoke();
+            }
+        }
     }
 }

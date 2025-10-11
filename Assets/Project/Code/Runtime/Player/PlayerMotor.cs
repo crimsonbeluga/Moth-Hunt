@@ -33,6 +33,9 @@ public class PlayerMotor : MonoBehaviour
     public float terminalFallSpeed = -40f;
     public float glideFallSpeed = -8f;
 
+    [Header("External Modifiers")]
+    [Range(0f, 2f)] public float surfaceSpeedMultiplier = 1f; // NEW: <1 slows, >1 speeds up
+
     [Header("Debug")]
     public bool logFrames = false;
     public bool logTransitions = true;
@@ -90,7 +93,8 @@ public class PlayerMotor : MonoBehaviour
 
         _passGrantedThisFrame = false;
 
-        float horiz = _desiredX * _curMaxSpeedX;
+        // Apply slowdown/speedup here so all modes respect it
+        float horiz = _desiredX * _curMaxSpeedX * Mathf.Max(0f, surfaceSpeedMultiplier);
 
         // ---> DO NOT overwrite horizontal when input-locked (so bounce push can stick)
         if (useZForHorizontal)
@@ -129,6 +133,9 @@ public class PlayerMotor : MonoBehaviour
                 if (_velocity.y < _curTerminal) _velocity.y = _curTerminal;
             }
         }
+
+        // --- FINAL SAFETY CAP: ensure slowdown is enforced regardless of state order ---
+        ClampHorizontal(_curMaxSpeedX * Mathf.Max(0f, surfaceSpeedMultiplier));
 
         Vector3 delta = _velocity * dt;
         CollisionFlags flags = _cc.Move(delta);
