@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyPatrolState : EnemyState
 {
-    public EnemyPatrolState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(motor, stateMachine)
+    public EnemyPatrolState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(ref motor, stateMachine)
     {
     }
 
@@ -14,7 +14,7 @@ public class EnemyPatrolState : EnemyState
     }
     public override void FrameUpdate()
     {
-        base.FrameUpdate();//unknown if needed, shouldnt hurt?
+       // base.FrameUpdate();//unknown if needed, shouldnt hurt?
 
         
         motor.SetHorizontalInput(motor.patrolSpeed);

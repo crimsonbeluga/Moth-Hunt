@@ -150,7 +150,7 @@ public class EnemyMotor : MonoBehaviour
         if (_cc.isGrounded) SyncAirMoveSpeedWhileGrounded();
 
         // publish grounding each frame for other systems (Throw/BouncePad)
-        PlayerInputRouter.IsGrounded = _cc.isGrounded;
+        //PlayerInputRouter.IsGrounded = _cc.isGrounded;
 
         if (logFrames) Debug.Log($"[Motor] Tick END   {DumpState()}");
     }
@@ -375,6 +375,20 @@ public class EnemyMotor : MonoBehaviour
                 _passGrantedThisFrame = true;
             }
         }
+    }
+
+
+    public void velocityDirection(bool input)
+    {
+        if (_velocity.x > 0)
+        {
+            input = true;
+        }
+        else if (_velocity.x < 0)
+        {
+            input = false;
+        }
+        else return;
     }
 }
 

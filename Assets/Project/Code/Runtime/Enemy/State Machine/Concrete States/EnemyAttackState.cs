@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyAttackState : EnemyState
 {
-    public EnemyAttackState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(motor, stateMachine)
+    public EnemyAttackState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(ref motor, stateMachine)
     {
     }
 
