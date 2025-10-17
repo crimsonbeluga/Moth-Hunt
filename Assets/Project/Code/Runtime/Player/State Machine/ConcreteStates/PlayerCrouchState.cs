@@ -10,9 +10,6 @@ public class PlayerCrouchState : PlayerState
         var col = motor.GetComponent<SimpleCapsuleResizer>();
         if (col) col.Crouch();
 
-        //camera
-        CameraController.Instance.ApplyActionModifier(CameraController.Instance.crouchCamModifiers);
-
         motor.Mode_Crouch();
         motor.SetHorizontalInput(0f);
         anim.PlayCrouch();
@@ -36,8 +33,6 @@ public class PlayerCrouchState : PlayerState
 
     public override void ExitState()
     {
-        //reset camera
-        CameraController.Instance.RemoveActionModifier(CameraController.Instance.crouchCamModifiers);
 
         motor.SetHorizontalInput(0f);
     }
