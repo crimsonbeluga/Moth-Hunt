@@ -108,7 +108,8 @@ public class EnemyBrain : MonoBehaviour
     {
         StateMachine.CurrentEnemyState?.FrameUpdate();
 
-        _motor.velocityDirection(_isFacingRight);
+        //_motor.velocityDirection(_isFacingRight);
+        //Debug.Log(_isFacingRight);
 
 
         //suspicion cap to prevent overflow
@@ -173,7 +174,7 @@ public class EnemyBrain : MonoBehaviour
         if (_hit.transform == playerTransform.transform)
         {
             _suspicion = _suspicionThreshold;
-            //_isChasing = true;
+            _isChasing = true;
         }
         else
         {
@@ -369,6 +370,7 @@ public class EnemyBrain : MonoBehaviour
             }
             else//if patrol to start
             {
+
                 //if not patrolling
                 if (!Is<EnemyPatrolState>() && Is<EnemyAlertedState>() || Is<EnemyReturningState>())
                 {
@@ -384,6 +386,15 @@ public class EnemyBrain : MonoBehaviour
                     //if patrolling, return
                     //SetPatrolDirection();
                     
+                    if(_isFacingRight)
+                    {
+
+                    }
+                    if(!_isFacingRight)
+                    {
+
+                    }
+
                     return;
                 }
 
@@ -483,6 +494,7 @@ public class EnemyBrain : MonoBehaviour
         if (input < 0f)
         {
             Physics.Raycast(this.transform.position, -this.transform.right, out _hit, _lineOfSightRange);
+            Debug.DrawRay(this.transform.position, this.transform.position, Color.blue, 1f);
         }
         else
         {

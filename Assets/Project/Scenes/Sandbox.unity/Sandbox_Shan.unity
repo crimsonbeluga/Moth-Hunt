@@ -304,7 +304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBrain
   _motor: {fileID: 317906456}
   playerTransform: {fileID: 679211776}
-  isIdleToStart: 0
+  _isIdleToStart: 0
   _patrolRoute:
   - {fileID: 77778773}
   - {fileID: 116797604}
@@ -316,7 +316,7 @@ MonoBehaviour:
   _suspicionThreshold: 100
   _alertedThreshold: 20
   _chaseThreshold: 75
-  _searchTime: 3
+  _searchTime: 5
   _lineOfSightRange: 5
   _attackRange: 1
   logBrainFrames: 1
@@ -356,7 +356,7 @@ Transform:
   m_GameObject: {fileID: 317906454}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.69, y: 3.23, z: 0}
+  m_LocalPosition: {x: -13.35, y: 3.23, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -531,7 +531,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -12.19
+      value: -8.24
       objectReference: {fileID: 0}
     - target: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: m_LocalPosition.y

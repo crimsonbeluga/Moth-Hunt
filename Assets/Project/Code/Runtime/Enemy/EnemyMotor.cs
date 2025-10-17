@@ -1,5 +1,4 @@
-﻿using MothHunt.Input;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -380,15 +379,7 @@ public class EnemyMotor : MonoBehaviour
 
     public void velocityDirection(bool input)
     {
-        if (_velocity.x > 0)
-        {
-            input = true;
-        }
-        else if (_velocity.x < 0)
-        {
-            input = false;
-        }
-        else return;
+        input = _enemySpriteRenderer.flipX;
     }
 }
 
