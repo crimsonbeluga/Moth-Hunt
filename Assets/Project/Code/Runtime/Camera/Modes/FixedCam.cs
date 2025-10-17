@@ -2,9 +2,10 @@ using UnityEngine;
 
 namespace MothHunt.Runtime.Camera
 {
+    //fixed cam for rooms/static cam
     public class FixedCam : CameraMode
     {
-        public override void OnChange()
+        public override void Start()
         {
             if (cameraObject == null || settings == null)
             {

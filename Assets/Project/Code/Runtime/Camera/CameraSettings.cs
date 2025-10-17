@@ -1,13 +1,13 @@
 using UnityEngine;
 namespace MothHunt.Runtime.Camera
 {
-
+    //encapsulates all settings for different camera modes
     [System.Serializable]
     public class CameraSettings
     {
         [Header("Shared Settings")]
         [Tooltip("Which camera mode to use for this configuration.")]
-        public CameraModes cameraMode = CameraModes.FollowCam;
+        public CameraModes mode = CameraModes.FollowCam;
 
         [Tooltip("Z distance of the camera relative to the target.")]
         public float distanceZ = -10f;
@@ -53,12 +53,18 @@ namespace MothHunt.Runtime.Camera
         [Tooltip("Facing direction (degrees) for the FixedCam.")]
         [Range(-180f, 180f)]
         public float facingDirection = 0f;
+
+        [Header("Cinematic Cam Settings")]
+        public CinematicWaypoint[] cinematicWaypoints;
+        public CameraSettings exitSettings;
+
     }
 
-
+    //camera modes
     public enum CameraModes
     {
         FollowCam,
-        FixedCam
+        FixedCam,
+        CinematicCam
     }
 }

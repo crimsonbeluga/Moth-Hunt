@@ -2,11 +2,12 @@ using UnityEngine;
 
 namespace MothHunt.Runtime.Camera
 {
+    //follows target transform
     public class FollowCam : CameraMode
     {
         private Vector3 velocity = Vector3.zero;
 
-        public override void OnChange()
+        public override void Start()
         {
             if (settings == null) return;
 
@@ -38,7 +39,6 @@ namespace MothHunt.Runtime.Camera
         {
             Vector3 basePos = settings.target.position;
 
-            // Use distanceZ from CameraSettings as the camera's Z (zoom)
             float z = settings.distanceZ;
 
             Vector3 desired = new Vector3(basePos.x, basePos.y, z);

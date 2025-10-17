@@ -545,18 +545,20 @@ MonoBehaviour:
   settings:
     cameraMode: 0
     distanceZ: -10
+    offset: {x: 0, y: 0, z: -10}
+    snapOnChange: 0
+    target: {fileID: 0}
     lockX: 0
     lockedXValue: 0
     lockY: 0
     lockedYValue: 0
-    snapOnChange: 0
     limitX: 0
     limitY: 0
     smoothTime: 0.15
     roomPosition: {x: -24, y: 4, z: 0}
     facingDirection: 0
-    roomOffset: {x: 0, y: 0, z: -10}
-    targetTransform: {fileID: 0}
+    cinematicWaypoints: []
+  destroyAfterTrigger: 1
 --- !u!65 &514554210
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -737,18 +739,20 @@ MonoBehaviour:
   settings:
     cameraMode: 0
     distanceZ: -10
+    offset: {x: 0, y: 0, z: -10}
+    snapOnChange: 0
+    target: {fileID: 0}
     lockX: 0
     lockedXValue: 0
     lockY: 1
     lockedYValue: 2.105
-    snapOnChange: 0
     limitX: 1
     limitY: 1
     smoothTime: 0.15
     roomPosition: {x: -24, y: 4, z: 0}
     facingDirection: 0
-    roomOffset: {x: 0, y: 0, z: -10}
-    targetTransform: {fileID: 0}
+    cinematicWaypoints: []
+  destroyAfterTrigger: 1
 --- !u!65 &599025147
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -965,18 +969,20 @@ MonoBehaviour:
   settings:
     cameraMode: 1
     distanceZ: -10
+    offset: {x: 0, y: 0, z: -10}
+    snapOnChange: 0
+    target: {fileID: 0}
     lockX: 0
     lockedXValue: 0
     lockY: 0
     lockedYValue: 0
-    snapOnChange: 0
     limitX: 0
     limitY: 0
     smoothTime: 0.15
     roomPosition: {x: -24, y: 4, z: 0}
     facingDirection: 0
-    roomOffset: {x: 0, y: 0, z: -10}
-    targetTransform: {fileID: 0}
+    cinematicWaypoints: []
+  destroyAfterTrigger: 1
 --- !u!1001 &891489681
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1422,6 +1428,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 550af42af80cf104fa6cddb2bda0a019, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraManager
+  defaultSettings:
+    cameraMode: 0
+    distanceZ: -10
+    offset: {x: 0, y: 0, z: -10}
+    snapOnChange: 0
+    target: {fileID: 0}
+    lockX: 0
+    lockedXValue: 0
+    lockY: 0
+    lockedYValue: 0
+    limitX: 0
+    limitY: 0
+    smoothTime: 0.15
+    roomPosition: {x: 0, y: 0, z: 0}
+    facingDirection: 0
+    cinematicWaypoints: []
 --- !u!1 &1444458486
 GameObject:
   m_ObjectHideFlags: 0
@@ -1804,18 +1826,20 @@ MonoBehaviour:
   settings:
     cameraMode: 0
     distanceZ: -10
+    offset: {x: 0, y: 0, z: -10}
+    snapOnChange: 0
+    target: {fileID: 0}
     lockX: 1
     lockedXValue: 0
     lockY: 0
     lockedYValue: 0
-    snapOnChange: 0
     limitX: 0
     limitY: 0
     smoothTime: 0.15
     roomPosition: {x: 0, y: 0, z: 0}
     facingDirection: 0
-    roomOffset: {x: 0, y: 0, z: -10}
-    targetTransform: {fileID: 0}
+    cinematicWaypoints: []
+  destroyAfterTrigger: 1
 --- !u!65 &1816273718
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2074,6 +2098,93 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1950818621}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2108516803
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2108516806}
+  - component: {fileID: 2108516805}
+  - component: {fileID: 2108516804}
+  m_Layer: 0
+  m_Name: Cinematic Trigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2108516804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108516803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 736ea64fb78955f4e8c63ea7c070d030, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraTrigger
+  settings:
+    cameraMode: 0
+    distanceZ: -10
+    offset: {x: 0, y: 0, z: -10}
+    snapOnChange: 0
+    target: {fileID: 0}
+    lockX: 0
+    lockedXValue: 0
+    lockY: 1
+    lockedYValue: 2.105
+    limitX: 1
+    limitY: 1
+    smoothTime: 0.15
+    roomPosition: {x: -24, y: 4, z: 0}
+    facingDirection: 0
+    cinematicWaypoints:
+    - position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 0}
+      transitionTime: 0
+      delayBeforeNext: 0
+  destroyAfterTrigger: 1
+--- !u!65 &2108516805
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108516803}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &2108516806
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108516803}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.28, y: 10.99, z: 0}
+  m_LocalScale: {x: 1, y: 4.7625, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2084,6 +2195,7 @@ SceneRoots:
   - {fileID: 683716347}
   - {fileID: 514554211}
   - {fileID: 599025148}
+  - {fileID: 2108516806}
   - {fileID: 1816273719}
   - {fileID: 103450281}
   - {fileID: 1395702816}
