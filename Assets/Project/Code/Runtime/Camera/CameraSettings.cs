@@ -57,7 +57,7 @@ namespace MothHunt.Runtime.Camera
         [Header("Cinematic Cam Settings")]
         public CinematicWaypoint[] cinematicWaypoints;
         public CameraSettings exitSettings;
-
+        public bool lockInput = true;
     }
 
     //camera modes

@@ -30,6 +30,12 @@ namespace MothHunt.Runtime.Camera
                 //sets up next camera mode if cinematic and next is follow cam for player
                 if (followUpSettings?.mode == CameraModes.FollowCam && followUpSettings.target == null)
                     followUpSettings.target = other.transform;
+
+                if (settings.lockInput)
+                {
+
+                }
+
                 //get follow-up settings set
                 settings.exitSettings = followUpSettings;
 
@@ -46,7 +52,7 @@ namespace MothHunt.Runtime.Camera
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.green;
+            Gizmos.color = Color.red;
             foreach (var waypoint in settings.cinematicWaypoints)
             {
                 Gizmos.DrawWireSphere(waypoint.position, 0.5f);
