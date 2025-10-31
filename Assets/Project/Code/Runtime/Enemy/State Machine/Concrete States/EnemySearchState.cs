@@ -23,6 +23,7 @@ public class EnemySearchState : EnemyState
     public override void ExitState()
     {
         motor.SetHorizontalInput(0f);
+        motor.ZeroHorizontal();
     }
 
 

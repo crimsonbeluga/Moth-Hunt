@@ -27,7 +27,7 @@ public class EnemyPatrolState : EnemyState
 
     public override void ExitState()
     {
-        motor.SetHorizontalInput(0f);
+        //motor.SetHorizontalInput(0f);
         motor.ZeroHorizontal();
     }
 

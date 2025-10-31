@@ -200,15 +200,25 @@ public class EnemyMotor : MonoBehaviour
     // -------- Knobs --------
     public void SetHorizontalInput(float x01)
     {
+        
         // Respect input lock from bounce pads or other systems
         if (InputLocked) x01 = 0f;
 
         _desiredX = Mathf.Clamp(x01, -1f, 1f);
         if (_enemySpriteRenderer)
         {
-            if (_desiredX > 0.05f) { _enemySpriteRenderer.flipX = true; _faceDir = +1; }
-            else if (_desiredX < -0.05f) { _enemySpriteRenderer.flipX = false; _faceDir = -1; }
+            if (_desiredX > 0.05f) 
+            { 
+                _enemySpriteRenderer.flipX = false;
+                _faceDir = +1; 
+            }
+            else if (_desiredX < -0.05f) 
+            { 
+                _enemySpriteRenderer.flipX = true;
+                _faceDir = -1; 
+            }
         }
+        
     }
     public void SetVerticalClimbInput(float y01) { _desiredY = Mathf.Clamp(y01, -1f, 1f); }
     public void SetGravity(float g, float term, [CallerMemberName] string caller = null)
@@ -379,7 +389,10 @@ public class EnemyMotor : MonoBehaviour
 
     public void velocityDirection(bool input)
     {
-        input = _enemySpriteRenderer.flipX;
+        if (_faceDir < 0)
+            input = false;
+        else
+            input = true;
     }
 }
 

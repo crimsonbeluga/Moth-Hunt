@@ -12,7 +12,7 @@ public class EnemyBrain : MonoBehaviour
 
     [Header("Initialization")]
     public bool _isIdleToStart = false;
-    private bool _isIdleFacingRight;
+    public bool _isIdleFacingRight = true;
 
     private bool _isUnaware = true;
     private float _timeDelayed = 0.0f;
@@ -23,7 +23,7 @@ public class EnemyBrain : MonoBehaviour
     private Transform _startingTransform;
     public Transform[] _patrolRoute;
     public int _patrolInt = 0;
-    private Transform _lastKnownPlayerLocation;
+    private Vector3 _lastKnownPlayerLocation;
 
     [Header("Suspicion")]
     public float _suspicion = 0;
@@ -31,6 +31,7 @@ public class EnemyBrain : MonoBehaviour
     public float _alertedThreshold = 15f;
     public float _chaseThreshold = 75f;
     public float _searchTime = 0f;
+    public float _hearingRange = 0f;
 
     [Header("Distance")]
     public float _lineOfSightRange = 5f;
@@ -91,7 +92,7 @@ public class EnemyBrain : MonoBehaviour
             StateMachine.Initialize(_idle);
             //for idle enemies, get the starting transform to return to
             _startingTransform = this.transform;
-
+            _timeDelayed = Time.time + _searchTime;
         }
         else
         {
@@ -101,6 +102,7 @@ public class EnemyBrain : MonoBehaviour
             SetPatrolDirection();
         }
 
+        _lastKnownPlayerLocation = new Vector3(0f,0f,0f);
     }
 
     // Update is called once per frame
@@ -109,7 +111,7 @@ public class EnemyBrain : MonoBehaviour
         StateMachine.CurrentEnemyState?.FrameUpdate();
 
         //_motor.velocityDirection(_isFacingRight);
-        //Debug.Log(_isFacingRight);
+        //Debug.Log(_motor.);
 
 
         //suspicion cap to prevent overflow
@@ -169,6 +171,10 @@ public class EnemyBrain : MonoBehaviour
         {
             CheckLOS(ref _motor.patrolSpeed);
         }
+        else if(Is<EnemyIdleState>())
+        {
+            CheckLOS(ref _motor.patrolSpeed);
+        }
 
 
         if (_hit.transform == playerTransform.transform)
@@ -203,6 +209,7 @@ public class EnemyBrain : MonoBehaviour
         // if reach alerted state
         if (_isAlertedThreshold || _isChasing )
         {
+
             
             //if reach chase state
             if ( _isChasing) 
@@ -217,7 +224,7 @@ public class EnemyBrain : MonoBehaviour
                         //set state to attack
                         TRN($"ChangeState -> Attack (from {CurStateName}) via Distance.");
                         StateMachine.ChangeState(_attack);
-                        //Mathf.Abs(_motor.chaseSpeed);//unknown if needed, fix re entering state
+
                         return;
                     }
                 }
@@ -231,6 +238,7 @@ public class EnemyBrain : MonoBehaviour
                     StateMachine.ChangeState(_chase);
                     //Mathf.Abs(_motor.patrolSpeed);//set patrol speed positive, attempt to fix re entering state
                     SetChaseDirection();
+                    //MathF.Abs(_motor.searchSpeed); //*****TESTING
                     return;
                 }
                 //_lastKnownPlayerLocation = playerTransform;
@@ -244,7 +252,7 @@ public class EnemyBrain : MonoBehaviour
                 //set state to alerted
                 TRN($"ChangeState -> Alerted (from {CurStateName}) via Suspicion.");
                 StateMachine.ChangeState(_alerted);
-                SetPatrolDirection();
+                MathF.Abs(_motor.patrolSpeed);// ***TESTING
                 return;
             }
         }
@@ -253,29 +261,33 @@ public class EnemyBrain : MonoBehaviour
         {
             if (_isChasing) return;
             //set search direction
-            if (this.transform.position.x <= _lastKnownPlayerLocation.position.x)
+            if (this.transform.position.x <= _lastKnownPlayerLocation.x)
             {
-                Mathf.Abs(_motor.searchSpeed);
+                _motor.searchSpeed = -2f;
             }
-            else if (this.transform.position.x >= _lastKnownPlayerLocation.position.x)
+            else if (this.transform.position.x >= _lastKnownPlayerLocation.x)
             {
-                Mathf.Abs(_motor.searchSpeed);
-                _motor.searchSpeed *= -1;
+                _motor.searchSpeed = 2f;
             }
-                SearchLimiting();
+
+            _timeDelayed = Time.time + _searchTime;
+            SearchLimiting();
+
             
         }    
 
         //if no suspicion
         if (_suspicion <= 0 )
         {
+
+
             //if not returning
             if(!Is<EnemyReturningState>() && Is<EnemySearchState>())
             {
 
                 TRN($"ChangeState -> Returning (from {CurStateName}) via lost Suspicion.");
                 StateMachine.ChangeState(_returning);
-               // Mathf.Abs(_motor.chaseSpeed);// attempt to fix re entering state
+                Mathf.Abs(_motor.chaseSpeed);// attempt to fix re entering state
                 return;
 
             }
@@ -325,7 +337,7 @@ public class EnemyBrain : MonoBehaviour
                 {
                     _isUnaware = true;
 
-
+                    _motor.ZeroHorizontal();
                 }
             }
 
@@ -333,6 +345,7 @@ public class EnemyBrain : MonoBehaviour
 
         if (_isUnaware)//final check to return to unaware
         {
+
             //decide which state to check
             if (_isIdleToStart)
             {
@@ -347,23 +360,31 @@ public class EnemyBrain : MonoBehaviour
                 }
                 else
                 {
-                    /*
+                    
+
                     //set a delay to turn around
-                    if(Time.time > _timeDelayed)
+                    if(Time.time >= _timeDelayed)
                     {
                         if(_isIdleFacingRight)
                         {
                             _isIdleFacingRight = false;
                             _motor.SetHorizontalInput(-.25f);
+                            _motor.patrolSpeed *= -1;
                         }
                         else
                         {
                             _isIdleFacingRight = true;
                             _motor.SetHorizontalInput(.25f);
+                            Mathf.Abs(_motor.patrolSpeed);
                             
                         }
+                        _timeDelayed = Time.time + _searchTime;
                     }
-                    */
+                    else
+                    {
+                        _motor.SetHorizontalInput(0f);
+                    }
+
                     //if idle, return
                     return;
                 }
@@ -371,18 +392,20 @@ public class EnemyBrain : MonoBehaviour
             else//if patrol to start
             {
 
+
                 //if not patrolling
                 if (!Is<EnemyPatrolState>() && Is<EnemyAlertedState>() || Is<EnemyReturningState>())
                 {
+                    //_motor.SetHorizontalInput(10f);
                     //set state to patrol
                     TRN($"ChangeState -> Patrol (from {CurStateName}) via Loss of Player.");
                     StateMachine.ChangeState(_patrol);
-                    //SetPatrolDirection();
+                    SetPatrolDirection();
                     return;
                 }
                 else
                 {
-                    Debug.Log("Patrolling at " + _motor.patrolSpeed + " units. ");
+                    //Debug.Log("Patrolling at " + _motor.patrolSpeed + " units. ");
                     //if patrolling, return
                     //SetPatrolDirection();
                     
@@ -394,6 +417,8 @@ public class EnemyBrain : MonoBehaviour
                     {
 
                     }
+
+                    SetPatrolDirection();
 
                     return;
                 }
@@ -415,7 +440,7 @@ public class EnemyBrain : MonoBehaviour
         _motor.patrolSpeed = Mathf.Abs(_motor.patrolSpeed);
         if (_patrolRoute[_patrolInt].transform.position.x < this.transform.position.x)
         {
-            if(!_isFacingRight)
+            //if(!_isFacingRight)
             {
                 _motor.patrolSpeed *= -1f;
                 
@@ -445,39 +470,59 @@ public class EnemyBrain : MonoBehaviour
 
     public void SetChaseDirection()
     {
-        _motor.chaseSpeed = Mathf.Abs(_motor.chaseSpeed);
-        if(playerTransform.position.x < this.transform.position.x)
+        //_motor.chaseSpeed = Mathf.Abs(_motor.chaseSpeed);
+        if (playerTransform.position.x < this.transform.position.x)
         {
-            _motor.chaseSpeed *= -1f;
-            
+            _motor.chaseSpeed *= -1;
+
         }
+        else if (playerTransform.position.x > this.transform.position.x)
+        {
+            Mathf.Abs(_motor.chaseSpeed);
+        }
+        else
+        {
+            //caught player
+            if (playerTransform.position.y == this.transform.position.y)
+            {
+                //player is caught, set attack state
+
+
+            }
+        }
+
     }
 
     public void SearchLimiting()
     {
-        if (_motor.searchSpeed > 0f)
+
+        if (Time.time >= _timeDelayed)
         {
-            if (this.transform.position.x > _lastKnownPlayerLocation.transform.position.x && _suspicion <= 0 )
+
+            if (_motor.searchSpeed > 0f)
             {
-                TRN($"ChangeState -> Returning (from {CurStateName}) via Loss of Suspicion.");
-                StateMachine.ChangeState(_returning);
-                return;
+                if (this.transform.position.x > _lastKnownPlayerLocation.x && _suspicion <= 0)
+                {
+                    TRN($"ChangeState -> Returning (from {CurStateName}) via Loss of Suspicion.");
+                    StateMachine.ChangeState(_returning);
+                    return;
+                }
             }
-        }
-        else
-        {
-            if(this.transform.position.x < _lastKnownPlayerLocation.transform.position.x && _suspicion <= 0)
+            else
             {
-                TRN($"ChangeState -> Searching (from {CurStateName}) via Loss of Suspicion.");
-                StateMachine.ChangeState(_returning);
-                return;
+                if (this.transform.position.x < _lastKnownPlayerLocation.x && _suspicion <= 0)
+                {
+                    TRN($"ChangeState -> Searching (from {CurStateName}) via Loss of Suspicion.");
+                    StateMachine.ChangeState(_returning);
+                    return;
+                }
             }
         }
     }
 
     public void SightLost()
     {
-        _lastKnownPlayerLocation = playerTransform;
+        _lastKnownPlayerLocation = playerTransform.position;
         _isChasing = false;
         if (!Is<EnemySearchState>() && Is<EnemyChaseState>())//safety check
         {
@@ -494,12 +539,20 @@ public class EnemyBrain : MonoBehaviour
         if (input < 0f)
         {
             Physics.Raycast(this.transform.position, -this.transform.right, out _hit, _lineOfSightRange);
-            Debug.DrawRay(this.transform.position, this.transform.position, Color.blue, 1f);
+           
         }
         else
         {
             Physics.Raycast(this.transform.position, this.transform.right, out _hit, _lineOfSightRange);
         }
+    }
+
+    //  **  LISTENER CODE **
+    public void listen() 
+    { 
+        //pseudo code for now
+        //if(recieved sound)
+        //++ suspicion;
     }
 
 
