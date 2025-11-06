@@ -14,6 +14,13 @@ public class EnemyBrain : MonoBehaviour
     public bool _isIdleToStart = false;
     public bool _isIdleFacingRight = true;
 
+    [Header("Enemy Type")]
+    public bool _IsDefaultEnemy = false;
+    public bool _IsCrystalEnemy = false;
+    public bool _IsReporterEnemy = false;
+    public bool _IsGrabberEnemy = false;
+    public bool _IsRangerEnemy = false;
+
     private bool _isUnaware = true;
     private float _timeDelayed = 0.0f;
     private bool _isAlertedThreshold = false;
@@ -548,11 +555,9 @@ public class EnemyBrain : MonoBehaviour
     }
 
     //  **  LISTENER CODE **
-    public void listen() 
-    { 
-        //pseudo code for now
-        //if(recieved sound)
-        //++ suspicion;
+    public void listen(float input) 
+    {
+        _suspicion += input;
     }
 
 

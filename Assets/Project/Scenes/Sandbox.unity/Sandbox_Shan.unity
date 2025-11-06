@@ -304,7 +304,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBrain
   _motor: {fileID: 317906456}
   playerTransform: {fileID: 679211776}
-  _isIdleToStart: 0
+  _isIdleToStart: 1
+  _isIdleFacingRight: 1
   _patrolRoute:
   - {fileID: 77778773}
   - {fileID: 116797604}
@@ -317,6 +318,7 @@ MonoBehaviour:
   _alertedThreshold: 20
   _chaseThreshold: 75
   _searchTime: 5
+  _hearingRange: 0
   _lineOfSightRange: 5
   _attackRange: 1
   logBrainFrames: 1
