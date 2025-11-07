@@ -157,43 +157,50 @@ public class EnemyBrain : MonoBehaviour
 
         }
 
-        //check line of sight based on current state
-        if(Is<EnemyPatrolState>())
+        //remove line of sight for enemies that do not need access
+        if (!_IsCrystalEnemy)
         {
-            CheckLOS(ref _motor.patrolSpeed);
-        }
-        else if (Is<EnemyAlertedState>())
-        {
-            CheckLOS(ref _motor.patrolSpeed);
-        }
-        else if(Is<EnemyChaseState>())
-        {
-            CheckLOS(ref _motor.chaseSpeed);
-        }
-        else if(Is<EnemySearchState>())
-        {
-            CheckLOS(ref _motor.searchSpeed);
-        }
-        else if(Is<EnemyReturningState>())
-        {
-            CheckLOS(ref _motor.patrolSpeed);
-        }
-        else if(Is<EnemyIdleState>())
-        {
-            CheckLOS(ref _motor.patrolSpeed);
-        }
+
+            //check line of sight based on current state
+            if (Is<EnemyPatrolState>())
+            {
+                CheckLOS(ref _motor.patrolSpeed);
+            }
+            else if (Is<EnemyAlertedState>())
+            {
+                CheckLOS(ref _motor.patrolSpeed);
+            }
+            else if (Is<EnemyChaseState>())
+            {
+                CheckLOS(ref _motor.chaseSpeed);
+            }
+            else if (Is<EnemySearchState>())
+            {
+                CheckLOS(ref _motor.searchSpeed);
+            }
+            else if (Is<EnemyReturningState>())
+            {
+                CheckLOS(ref _motor.patrolSpeed);
+            }
+            else if (Is<EnemyIdleState>())
+            {
+                CheckLOS(ref _motor.patrolSpeed);
+            }
 
 
-        if (_hit.transform == playerTransform.transform)
-        {
-            _suspicion = _suspicionThreshold;
-            _isChasing = true;
+            //if raycast hits the player transform (player is seen)
+            if (_hit.transform == playerTransform.transform)
+            {
+                _suspicion = _suspicionThreshold;
+                _isChasing = true;
+            }
+            else
+            {
+                SightLost();
+            }
         }
-        else
-        {
-            _suspicion -= 2;
-            SightLost();
-        }
+        //always lose suspicion
+        _suspicion -= 2;
 
 
         //set suspicion levels
