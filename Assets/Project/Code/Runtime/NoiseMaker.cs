@@ -4,17 +4,16 @@ using UnityEngine;
 
 public class NoiseMaker : MonoBehaviour
 {
-
+    public SphereCollider _noiseCollider;
     public float _volumeDistance;
     public bool _isNoiseMadeThisFrame;
 
-    public void onTick(float _curRange, float _maxRange)
+    public void onTick()
     {
         //if noise made this frame
         if(_isNoiseMadeThisFrame)
         {
-            //set range to max
-            _curRange = _maxRange;
+
 
             //set to false so cant keep at max size
             _isNoiseMadeThisFrame = false;
@@ -22,11 +21,11 @@ public class NoiseMaker : MonoBehaviour
         }
         else
         {
-            if(_curRange < 1)
+            if(_noiseCollider.radius < 1)
             { 
-                _curRange = 1; 
+                _noiseCollider.radius = 1; 
             }
-            _curRange -= .5f;
+            _noiseCollider.radius -= .5f;
         }
     }
 
@@ -34,6 +33,7 @@ public class NoiseMaker : MonoBehaviour
 
     public void MakeNoise(float vol)
     {
-        _volumeDistance = vol;
+        _isNoiseMadeThisFrame = true;
+        _noiseCollider.radius = vol;
     }
 }

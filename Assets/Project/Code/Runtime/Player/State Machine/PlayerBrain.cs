@@ -229,12 +229,7 @@ public class PlayerBrain : MonoBehaviour
                            && (Time.time - _lastNonZeroMoveTime) > idleEnterDelay
                            && _motor.CurrentPlanarSpeed < idleSpeedThreshold;
 
-        //noise code
-        if(Is<PlayerWalkState>())
-        {
-            _noiseMaker.onTick(_noiseCollider.radius,_walkSuspicionRange);
-        }
-
+        _noiseMaker.onTick();
 
 
         if (_motor.IsGrounded() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>())
