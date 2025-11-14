@@ -41,6 +41,17 @@ public class PlayerBrain : MonoBehaviour
 
     private float _lastNonZeroMoveTime = -999f;
 
+    [Header("Suspicion")]
+    public SphereCollider _noiseCollider;
+    public NoiseMaker _noiseMaker;
+    public float _suspicionVolume;
+    public float _walkSuspicionRange;
+    public float _sprintSuspicionRange;
+    public float _jumpSuspicionRange;
+    public float _crouchSuspicionRange;
+
+
+
     private string CurStateName => StateMachine?.CurrentPlayerState?.GetType().Name ?? "(null)";
     private void DBG(string msg) { if (logBrainFrames || logDecisions || logTransitions || logLifecycle) Debug.Log($"[Brain f{Time.frameCount} t{Time.time:0.000}] {msg}", this); }
     private void DEC(string msg) { if (logDecisions) Debug.Log($"[Brain/DEC f{Time.frameCount}] {msg}", this); }
@@ -71,6 +82,8 @@ public class PlayerBrain : MonoBehaviour
         _glide = new PlayerGlideState(_motor, StateMachine, _anim);
         _climb = new PlayerClimbState(_motor, StateMachine, _anim);
         _air = new PlayerAirState(_motor, StateMachine, _anim);
+
+
     }
 
     private void OnEnable()
@@ -215,6 +228,14 @@ public class PlayerBrain : MonoBehaviour
         bool readyToIdle = !hasMove
                            && (Time.time - _lastNonZeroMoveTime) > idleEnterDelay
                            && _motor.CurrentPlanarSpeed < idleSpeedThreshold;
+
+        //noise code
+        if(Is<PlayerWalkState>())
+        {
+            _noiseMaker.onTick(_noiseCollider.radius,_walkSuspicionRange);
+        }
+
+
 
         if (_motor.IsGrounded() || Is<PlayerWalkState>() || Is<PlayerSprintState>() || Is<PlayerCrouchState>())
         {
