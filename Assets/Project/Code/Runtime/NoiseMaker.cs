@@ -4,8 +4,21 @@ using UnityEngine;
 
 public class NoiseMaker : MonoBehaviour
 {
+    //reference
     public SphereCollider _noiseCollider;
-    public float _volumeDistance;
+
+    [Header("Range")]
+    //hardcoded ranges for noise. Might be replaced with one range and scaled based on state
+    public float _walkSuspicionRange;
+    public float _sprintSuspicionRange;
+    public float _jumpSuspicionRange;
+    public float _crouchSuspicionRange;
+
+    [Header("Terrain")]
+    //set up a multiplier for each type of terrain
+
+
+    [Header("Logic")]
     public bool _isNoiseMadeThisFrame;
 
     public void onTick()
@@ -13,8 +26,6 @@ public class NoiseMaker : MonoBehaviour
         //if noise made this frame
         if(_isNoiseMadeThisFrame)
         {
-
-
             //set to false so cant keep at max size
             _isNoiseMadeThisFrame = false;
 
@@ -25,8 +36,10 @@ public class NoiseMaker : MonoBehaviour
             { 
                 _noiseCollider.radius = 1; 
             }
-            _noiseCollider.radius -= .5f;
+            _noiseCollider.radius -= .2f;
         }
+
+        //check if enemy is within range
     }
 
 

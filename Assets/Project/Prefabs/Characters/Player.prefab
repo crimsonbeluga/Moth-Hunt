@@ -284,6 +284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ccf177716ba09f43afd9c9e95cdf8f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MothHunt.Movement.PlayerMotor
+  _noise: {fileID: 7178591833357438484}
   useZForHorizontal: 0
   walkSpeed: 5
   sprintSpeed: 10
