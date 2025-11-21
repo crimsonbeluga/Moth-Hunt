@@ -81,7 +81,7 @@ GameObject:
   - component: {fileID: 5827180592570200443}
   - component: {fileID: 286298088417400172}
   m_Layer: 0
-  m_Name: Pickup_Bottle
+  m_Name: Pickup_Bottle 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -221,4 +221,4 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8805677931024333624}
-  m_Mesh: {fileID: -6331295760042696961, guid: 4afcc75fa557e7b44a18c47728cd7505, type: 3}
+  m_Mesh: {fileID: 7214874963237807513, guid: eb6e4db4c239af648a935a4fb9e5c0ed, type: 3}

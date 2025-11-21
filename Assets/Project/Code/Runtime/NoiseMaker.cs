@@ -17,6 +17,10 @@ public class NoiseMaker : MonoBehaviour
     [Header("Terrain")]
     //set up a multiplier for each type of terrain
 
+    public bool _isOnGrass;
+    public bool _isOnMetal;
+    public bool _isOnDirt;
+    public bool _isOnGravel;
 
     [Header("Logic")]
     public bool _isNoiseMadeThisFrame;
