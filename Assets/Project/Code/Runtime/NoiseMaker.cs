@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,8 +23,13 @@ public class NoiseMaker : MonoBehaviour
     public bool _isOnDirt;
     public bool _isOnGravel;
 
+    [Header("Volume")]
+    public float noiseVolume;
+
     [Header("Logic")]
     public bool _isNoiseMadeThisFrame;
+    private Ray ray;
+
 
     public void onTick()
     {
@@ -53,4 +59,51 @@ public class NoiseMaker : MonoBehaviour
         _isNoiseMadeThisFrame = true;
         _noiseCollider.radius = vol;
     }
+
+
+    //set up line of sight checks
+    //if _noiseCollider overlaps object tagged enemy
+    //send a raycast to that direction.
+    //if raycast.hit is enemy
+    //add to that enemies suspicion
+
+    public void findEnemy()
+    {
+        //_noiseCollider.Raycast( ray, out RaycastHit  hitInfo);
+        
+
+
+
+    }
+
+    void OnCollisionEnter(Collision collision) //on enter collision
+    {
+
+        foreach (ContactPoint contact in collision.contacts) //for each object in collision
+        {
+            Debug.Log(contact.thisCollider.gameObject.name);
+            Type type = contact.GetType(); //save type to use if needed
+            if(type == typeof(EnemyMotor)) //if contact has an EnemyMotor
+            {
+                Debug.Log(contact.thisCollider.gameObject.name);
+
+                if (Physics.Linecast(this.gameObject.transform.position, contact.thisCollider.transform.position)) //linecast between this object and the enemy
+                {
+                    //if connection is broken
+                    Debug.Log("Something in the way.");
+                }//if linecast succeeds
+                else
+                {
+                    //add connection to enemy, and increase suspicion
+                    contact.thisCollider.gameObject.GetComponent<EnemyBrain>().listen(noiseVolume);
+                }
+
+
+            }
+
+        }
+    }
+
+
+
 }
