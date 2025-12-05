@@ -33,15 +33,20 @@ public class NoiseMaker : MonoBehaviour
 
     public void onTick()
     {
+       
+
         //if noise made this frame
         if(_isNoiseMadeThisFrame)
         {
+            findEnemy(this.transform.position, _noiseCollider.radius);
             //set to false so cant keep at max size
             _isNoiseMadeThisFrame = false;
 
         }
         else
         {
+            
+
             if(_noiseCollider.radius < 1)
             { 
                 _noiseCollider.radius = 1; 
@@ -61,48 +66,39 @@ public class NoiseMaker : MonoBehaviour
     }
 
 
-    //set up line of sight checks
-    //if _noiseCollider overlaps object tagged enemy
-    //send a raycast to that direction.
-    //if raycast.hit is enemy
-    //add to that enemies suspicion
 
-    public void findEnemy()
+    public void findEnemy(Vector3 center, float radius)
     {
-        //_noiseCollider.Raycast( ray, out RaycastHit  hitInfo);
-        
-
-
-
-    }
-
-    void OnCollisionEnter(Collision collision) //on enter collision
-    {
-
-        foreach (ContactPoint contact in collision.contacts) //for each object in collision
-        {
-            Debug.Log(contact.thisCollider.gameObject.name);
-            Type type = contact.GetType(); //save type to use if needed
-            if(type == typeof(EnemyMotor)) //if contact has an EnemyMotor
+        Collider[] hitColliders = Physics.OverlapSphere(center, radius);//array of all colissions within the sphere
+        foreach (var hitCollider in hitColliders)
+        {// for each collider
+            if (hitCollider.gameObject.layer == 6)// Layer 6 is Enemy, therfore if the game object is on enemy layer
             {
-                Debug.Log(contact.thisCollider.gameObject.name);
+                //can safely be removed later
+                Debug.Log("Found An ENEMY!");
 
-                if (Physics.Linecast(this.gameObject.transform.position, contact.thisCollider.transform.position)) //linecast between this object and the enemy
+                //create a vector for the raycast to follow
+                Vector3 directionToTarget = (hitCollider.transform.position - this.gameObject.transform.position).normalized;
+                //shoot a raycast to the enemy
+                Physics.Raycast(transform.position, directionToTarget, out RaycastHit hitInfo, _noiseCollider.radius);
+                //if raycasts hits the enemy object found in collider
+                if(hitInfo.collider == hitCollider)
                 {
-                    //if connection is broken
-                    Debug.Log("Something in the way.");
-                }//if linecast succeeds
+                    //increase enemy suspicion
+                    hitCollider.gameObject.GetComponent<EnemyBrain>().listen(noiseVolume);
+                }
                 else
                 {
-                    //add connection to enemy, and increase suspicion
-                    contact.thisCollider.gameObject.GetComponent<EnemyBrain>().listen(noiseVolume);
+                    //no line of sight, no noise made. object blocked
+                    Debug.Log(hitInfo.collider.gameObject.name + " is in the way.");
                 }
 
 
             }
-
         }
+
     }
+
 
 
 
