@@ -42,10 +42,13 @@ public class PlayerBrain : MonoBehaviour
     private float _lastNonZeroMoveTime = -999f;
 
     [Header("Suspicion")]
+    public SphereCollider _noiseCollider;
     public NoiseMaker _noiseMaker;
-    //currently unknown purpose, can be removed
     public float _suspicionVolume;
-
+    public float _walkSuspicionRange;
+    public float _sprintSuspicionRange;
+    public float _jumpSuspicionRange;
+    public float _crouchSuspicionRange;
 
 
 
