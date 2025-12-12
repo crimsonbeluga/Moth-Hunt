@@ -41,14 +41,6 @@ public class PlayerBrain : MonoBehaviour
 
     private float _lastNonZeroMoveTime = -999f;
 
-    [Header("Suspicion")]
-    public NoiseMaker _noiseMaker;
-    //currently unknown purpose, can be removed
-    public float _suspicionVolume;
-
-
-
-
     private string CurStateName => StateMachine?.CurrentPlayerState?.GetType().Name ?? "(null)";
     private void DBG(string msg) { if (logBrainFrames || logDecisions || logTransitions || logLifecycle) Debug.Log($"[Brain f{Time.frameCount} t{Time.time:0.000}] {msg}", this); }
     private void DEC(string msg) { if (logDecisions) Debug.Log($"[Brain/DEC f{Time.frameCount}] {msg}", this); }

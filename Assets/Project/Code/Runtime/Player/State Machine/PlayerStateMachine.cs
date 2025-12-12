@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class PlayerStateMachine
 {
-    [Header("States")]
     public PlayerState CurrentPlayerState { get; private set; }
     public PlayerState PreviousPlayerState { get; private set; }    
 
