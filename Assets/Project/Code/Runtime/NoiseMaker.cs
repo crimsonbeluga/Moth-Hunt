@@ -22,6 +22,8 @@ public class NoiseMaker : MonoBehaviour
     public bool _isOnMetal;
     public bool _isOnDirt;
     public bool _isOnGravel;
+    public bool _isOnLeaves;
+    public bool _isOnWater;
 
     [Header("Volume")]
     public float noiseVolume;
@@ -90,13 +92,10 @@ public class NoiseMaker : MonoBehaviour
                 else
                 {
                     //no line of sight, no noise made. object blocked
-                    Debug.Log(hitInfo.collider.gameObject.name + " is in the way.");
+                    //Debug.Log(hitInfo.collider.gameObject.name + " is in the way.");
                 }
-
-
             }
         }
-
     }
 
 
