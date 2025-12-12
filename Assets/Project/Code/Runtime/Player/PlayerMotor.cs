@@ -6,9 +6,6 @@ using MothHunt.Input;   // so we can set PlayerInputRouter.IsGrounded
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMotor : MonoBehaviour
 {
-    [Header("References")]
-    public NoiseMaker _noise;
-
     [Header("Axes")]
     public bool useZForHorizontal = false;
 

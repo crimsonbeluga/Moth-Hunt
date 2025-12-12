@@ -28,8 +28,6 @@ public class PlayerCrouchState : PlayerState
         else
         {
             anim.SetSpeed(1f);
-            //add noise
-            motor._noise.MakeNoise(motor._noise._crouchSuspicionRange);
         }
     }
 

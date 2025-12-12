@@ -23,8 +23,6 @@ public class PlayerGlideState : PlayerState
         var mv = PlayerInputRouter.Move;
         motor.SetHorizontalInput(mv.x);
 
-
-
         if (motor.IsGrounded())
             Debug.Log("[GlideState] Grounded while in Glide; expect Brain to switch out.");
     }

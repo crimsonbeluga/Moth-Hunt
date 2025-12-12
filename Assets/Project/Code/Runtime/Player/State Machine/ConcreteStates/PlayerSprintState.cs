@@ -28,8 +28,6 @@ public class PlayerSprintState : PlayerState
         else
         {
             anim.SetSpeed(1f);
-            //added noise code when moving
-            motor._noise.MakeNoise(motor._noise._sprintSuspicionRange);
         }
     }
 
