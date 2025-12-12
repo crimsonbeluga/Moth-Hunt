@@ -2,28 +2,35 @@ using UnityEngine;
 
 public class EnemyAttackState : EnemyState
 {
-    public EnemyAttackState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(motor, stateMachine)
+    public EnemyAttackState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(ref motor, stateMachine)
     {
     }
 
     public override void EnterState()
     {
-        motor.Mode_Walk();
+        motor.Mode_Chase();
         motor.SetHorizontalInput(0f);
+        //Set movement to 0f
+        /* ** PSEUDO CODE **
+         * 
+         * Set player motor velocity to 0f
+         * Call enemy animator to change to grab animation
+         * 
+         * Call player death system (Unknown if static call or reference needed)
+         * 
+         * 
+         */
+
     }
 
     public override void FrameUpdate()
     {
-        /* ** PSEUDO CODE **
-         * Trigger attack code
-         * Consider player distance
-         * Move toward player
-         */
+
 
     }
 
     public override void ExitState() 
     {
-        motor.SetHorizontalInput(0f);
+
     }
 }
