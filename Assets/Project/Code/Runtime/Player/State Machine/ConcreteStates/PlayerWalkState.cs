@@ -1,5 +1,6 @@
 // PlayerWalkState.cs
 using MothHunt.Input;
+using Unity.VisualScripting;
 
 public class PlayerWalkState : PlayerState
 {
@@ -19,6 +20,9 @@ public class PlayerWalkState : PlayerState
     {
         var mv = PlayerInputRouter.Move;
         motor.SetHorizontalInput(mv.x);
+        motor._noise.MakeNoise(motor._noise._walkSuspicionRange);
+        //
+        
     }
 
     public override void ExitState()

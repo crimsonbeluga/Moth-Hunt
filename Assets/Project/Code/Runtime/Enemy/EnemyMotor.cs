@@ -45,6 +45,10 @@ public class EnemyMotor : MonoBehaviour
         _cc = GetComponent<CharacterController>();
         Mode_Walk();
         Debug.Log($"[Motor] Awake -> {DumpState()}");
+
+        //testing collission/contact for connnecting to player
+        _cc.providesContacts = true;
+       
     }
 
 
