@@ -31,6 +31,7 @@ public class PlayerGlideState : PlayerState
 
     public override void ExitState()
     {
+
         motor.End_Glide();
         motor.SetHorizontalInput(0f);
     }

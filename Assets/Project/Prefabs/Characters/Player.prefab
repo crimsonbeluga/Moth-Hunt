@@ -125,7 +125,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4427095230570626559}
   - {fileID: 4891520620708023455}
   - {fileID: 7668280214714430940}
   - {fileID: 2961312617507267245}
@@ -400,7 +399,7 @@ MonoBehaviour:
   planeIsXY: 1
   hand: {fileID: 4891520620708023455}
   preview: {fileID: 2515389610604015442}
-  cam: {fileID: 185486990630464870}
+  cam: {fileID: 0}
   anim: {fileID: 8982251684392439777}
   inventory: {fileID: 8717535094528807971}
   p_IsThrowMode: IsThrowMode

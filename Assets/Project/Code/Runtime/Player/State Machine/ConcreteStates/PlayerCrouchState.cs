@@ -35,6 +35,7 @@ public class PlayerCrouchState : PlayerState
 
     public override void ExitState()
     {
+
         motor.SetHorizontalInput(0f);
     }
 }
