@@ -1765,6 +1765,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1743954607350137041, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: logDecisions
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1743954607350137041, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: logLifecycle
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1743954607350137041, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: logBrainFrames
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1743954607350137041, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: logTransitions
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: m_LocalPosition.x
       value: -6.1
@@ -1805,17 +1821,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2628494378236013052, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: DefaultCamSettings.maxLookOffset.x
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 2628494378236013052, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: DefaultCamSettings.maxLookOffset.y
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 2628494378236013052, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: crouchCamModifiers.camDistanceModifier
+      value: -3
+      objectReference: {fileID: 0}
     - target: {fileID: 3165486706134402212, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 4427095230570626559, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5949876930019018513, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: _sprintCharge
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5949876930019018513, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: logTransitions
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949876930019018513, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: momentumRiseTime
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5949876930019018513, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
+      propertyPath: logGravityChanges
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6628305073197425175, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
       propertyPath: m_Size.x
@@ -3681,10 +3721,12 @@ MonoBehaviour:
     radius: 0.32
     center: {x: 0, y: 0.55, z: 0}
     stepOffset: 0
-  worldMask:
+  shrinkGroundSnap: 0.02
+  applyProfileStepOffset: 1
+  headCheckMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  skinPad: 0.01
+  headroomPadding: 0.005
 --- !u!1 &1849705444
 GameObject:
   m_ObjectHideFlags: 0
