@@ -303,8 +303,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBrain
   _motor: {fileID: 317906456}
-  playerTransform: {fileID: 733860134}
-  isIdleToStart: 0
+  playerTransform: {fileID: 679211776}
+  _isIdleToStart: 0
   _patrolRoute:
   - {fileID: 77778773}
   - {fileID: 116797604}
@@ -319,8 +319,8 @@ MonoBehaviour:
   _searchTime: 3
   _lineOfSightRange: 5
   _attackRange: 1
-  logBrainFrames: 1
-  logDecisions: 1
+  logBrainFrames: 0
+  logDecisions: 0
   logTransitions: 1
 --- !u!143 &317906458
 CharacterController:
@@ -504,7 +504,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &733860134 stripped
+--- !u!4 &679211776 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2482587883511980912, guid: dba7eb80cf7b0c442bcdafb7e62481f0, type: 3}
   m_PrefabInstance: {fileID: 778390711}
