@@ -19,9 +19,8 @@ public class EnemyPatrolState : EnemyState
         
         motor.SetHorizontalInput(motor.patrolSpeed);
 
-        /*
-         * 
-         */
+       
+
 
     }
 
