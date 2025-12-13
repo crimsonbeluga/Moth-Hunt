@@ -33,6 +33,8 @@ public class PlayerJumpState : PlayerState
 
         motor.SetHorizontalInput(0f);
         anim.PlayJump();
+        //added noise
+        motor._noise.MakeNoise(motor._noise._jumpSuspicionRange);
     }
 
     public override void FrameUpdate()
@@ -47,6 +49,9 @@ public class PlayerJumpState : PlayerState
 
         var mv = PlayerInputRouter.Move;
         motor.SetHorizontalInput(mv.x);
+
+
+
     }
 
     public override void ExitState()

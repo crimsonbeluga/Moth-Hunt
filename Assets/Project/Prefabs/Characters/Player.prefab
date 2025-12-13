@@ -31,7 +31,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2482587883511980912}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &505511439440987972
+--- !u!1 &836293551686226630
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -39,27 +39,25 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7030059296577178555}
-  - component: {fileID: 7642061182875273418}
-  - component: {fileID: 1353457580803871758}
-  - component: {fileID: 2934925441205337510}
-  m_Layer: 0
+  - component: {fileID: 2961312617507267245}
+  - component: {fileID: 6476827490919652482}
+  m_Layer: 3
   m_Name: NoiseBubble
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7030059296577178555
+--- !u!4 &2961312617507267245
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 505511439440987972}
+  m_GameObject: {fileID: 836293551686226630}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -5.75}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -127,7 +125,7 @@ SphereCollider:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 505511439440987972}
+  m_GameObject: {fileID: 836293551686226630}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -136,7 +134,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -162,6 +160,7 @@ GameObject:
   - component: {fileID: 8717535094528807971}
   - component: {fileID: 3213160002297832831}
   - component: {fileID: 9015477511665354096}
+  - component: {fileID: 7178591833357438484}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -182,9 +181,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4427095230570626559}
   - {fileID: 4891520620708023455}
   - {fileID: 7668280214714430940}
-  - {fileID: 7030059296577178555}
+  - {fileID: 2961312617507267245}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &8763796671736166640
@@ -259,12 +259,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 1f5b54e594180ab43a3975e6974b40e9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5affbfb5670fb1e488ab6550c3458bd4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.298, y: 2.99}
+  m_Size: {x: 2.278, y: 3.202}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
@@ -282,6 +282,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ccf177716ba09f43afd9c9e95cdf8f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MothHunt.Movement.PlayerMotor
+  _noise: {fileID: 7178591833357438484}
   useZForHorizontal: 0
   walkSpeed: 5
   sprintSpeed: 10
@@ -460,7 +461,7 @@ MonoBehaviour:
   planeIsXY: 1
   hand: {fileID: 4891520620708023455}
   preview: {fileID: 2515389610604015442}
-  cam: {fileID: 0}
+  cam: {fileID: 185486990630464870}
   anim: {fileID: 8982251684392439777}
   inventory: {fileID: 8717535094528807971}
   p_IsThrowMode: IsThrowMode
@@ -479,8 +480,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac4d98aad2cdb194998580780df45195, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NoiseMaker
-  _noiseCollider: {fileID: 2934925441205337510}
-  _volumeDistance: 0
+  _noiseCollider: {fileID: 6476827490919652482}
+  _walkSuspicionRange: 0
+  _sprintSuspicionRange: 0
+  _jumpSuspicionRange: 0
+  _crouchSuspicionRange: 0
+  _isOnGrass: 0
+  _isOnMetal: 0
+  _isOnDirt: 0
+  _isOnGravel: 0
+  noiseVolume: 0
   _isNoiseMadeThisFrame: 0
 --- !u!1 &6294668233895217291
 GameObject:
