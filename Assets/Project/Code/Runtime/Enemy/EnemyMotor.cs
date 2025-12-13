@@ -79,6 +79,10 @@ public class EnemyMotor : MonoBehaviour
         _enemySpriteRenderer = GetComponent<SpriteRenderer>();
         Mode_Patrol();
         Debug.Log($"[Motor] Awake -> {DumpState()}");
+
+        //testing collission/contact for connnecting to player
+        _cc.providesContacts = true;
+       
     }
 
 
