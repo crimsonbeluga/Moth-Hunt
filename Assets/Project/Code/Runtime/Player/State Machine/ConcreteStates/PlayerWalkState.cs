@@ -19,7 +19,6 @@ public class PlayerWalkState : PlayerState
     {
         var mv = PlayerInputRouter.Move;
         motor.SetHorizontalInput(mv.x);
-        
     }
 
     public override void ExitState()
