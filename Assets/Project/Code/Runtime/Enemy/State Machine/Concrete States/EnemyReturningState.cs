@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyReturningState : EnemyState
 {
-    public EnemyReturningState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(ref motor, stateMachine)
+    public EnemyReturningState(EnemyMotor motor, EnemyStateMachine stateMachine, EnemyAnimator anim) : base(ref motor, stateMachine, anim   )
     {
     }
 
@@ -10,6 +10,7 @@ public class EnemyReturningState : EnemyState
     {
         motor.Mode_Patrol();//Potentially change to new motor mode
         motor.SetHorizontalInput(0f);
+        anim.PlayWalk();
     }
 
     public override void FrameUpdate()

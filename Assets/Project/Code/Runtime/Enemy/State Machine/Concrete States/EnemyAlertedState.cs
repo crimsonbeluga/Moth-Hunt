@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyAlertedState : EnemyState
 {
-    public EnemyAlertedState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(ref motor, stateMachine)
+    public EnemyAlertedState(EnemyMotor motor, EnemyStateMachine stateMachine, EnemyAnimator anim) : base(ref motor, stateMachine, anim)
     {
     }
 
@@ -10,6 +10,7 @@ public class EnemyAlertedState : EnemyState
     {
         motor.Mode_Patrol();
         motor.SetHorizontalInput(0f);
+        anim.PlaySurpised();
     }
 
     public override void FrameUpdate()

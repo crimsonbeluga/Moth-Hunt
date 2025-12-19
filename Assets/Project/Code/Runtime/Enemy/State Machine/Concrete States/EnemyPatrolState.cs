@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyPatrolState : EnemyState
 {
-    public EnemyPatrolState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(ref motor, stateMachine)
+    public EnemyPatrolState(EnemyMotor motor, EnemyStateMachine stateMachine, EnemyAnimator anim) : base(ref motor, stateMachine, anim)
     {
     }
 
@@ -11,6 +11,7 @@ public class EnemyPatrolState : EnemyState
         motor.Mode_Patrol();
         motor.SetHorizontalInput(0f);
         //add anim walk enter
+        anim.PlayWalk();
     }
     public override void FrameUpdate()
     {

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemySearchState : EnemyState
 {
-    public EnemySearchState(EnemyMotor motor, EnemyStateMachine stateMachine) : base(ref motor, stateMachine)
+    public EnemySearchState(EnemyMotor motor, EnemyStateMachine stateMachine, EnemyAnimator anim) : base(ref motor, stateMachine, anim)
     {
     }
 
@@ -10,6 +10,7 @@ public class EnemySearchState : EnemyState
     {
         motor.Mode_Search();
         motor.SetHorizontalInput(0f);
+        anim.PlayWalk();
     }
 
     public override void FrameUpdate()

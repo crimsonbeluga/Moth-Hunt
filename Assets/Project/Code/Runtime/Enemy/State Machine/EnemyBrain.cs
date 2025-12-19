@@ -9,6 +9,7 @@ public class EnemyBrain : MonoBehaviour
     [Header("References")]
     public EnemyStateMachine StateMachine { get; private set; }
     public EnemyMotor _motor;
+    public EnemyAnimator _animator;
     public Transform playerTransform;
 
     [Header("Initialization")]
@@ -77,13 +78,13 @@ public class EnemyBrain : MonoBehaviour
         //create a state machine for the enemy
         StateMachine = new EnemyStateMachine();
         //fill in all relevant states
-        _idle = new EnemyIdleState(_motor, StateMachine);
-        _patrol = new EnemyPatrolState(_motor, StateMachine);
-        _chase = new EnemyChaseState(_motor,StateMachine);
-        _alerted = new EnemyAlertedState(_motor,StateMachine);
-        _attack = new EnemyAttackState(_motor,StateMachine);
-        _returning = new EnemyReturningState(_motor,StateMachine);
-        _search = new EnemySearchState(_motor,StateMachine);
+        _idle = new EnemyIdleState(_motor, StateMachine, _animator);
+        _patrol = new EnemyPatrolState(_motor, StateMachine, _animator);
+        _chase = new EnemyChaseState(_motor,StateMachine, _animator);
+        _alerted = new EnemyAlertedState(_motor,StateMachine, _animator);
+        _attack = new EnemyAttackState(_motor,StateMachine, _animator);
+        _returning = new EnemyReturningState(_motor,StateMachine, _animator);
+        _search = new EnemySearchState(_motor,StateMachine, _animator);
 
         
 
@@ -487,7 +488,7 @@ public class EnemyBrain : MonoBehaviour
 
     public void SetChaseDirection()
     {
-        //_motor.chaseSpeed = Mathf.Abs(_motor.chaseSpeed);
+        _motor.chaseSpeed = Mathf.Abs(_motor.chaseSpeed);
         if (playerTransform.position.x < this.transform.position.x)
         {
             _motor.chaseSpeed *= -1;

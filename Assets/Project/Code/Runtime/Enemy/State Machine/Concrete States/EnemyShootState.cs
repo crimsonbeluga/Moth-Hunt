@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyShootState : EnemyState
 {
-    public EnemyShootState(ref EnemyMotor motor, EnemyStateMachine stateMachine) : base(ref motor, stateMachine)
+    public EnemyShootState(EnemyMotor motor, EnemyStateMachine stateMachine, EnemyAnimator anim) : base(ref motor, stateMachine, anim)
     {
     }
     public override void EnterState()
