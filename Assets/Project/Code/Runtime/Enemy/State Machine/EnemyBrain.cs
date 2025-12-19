@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -108,6 +109,8 @@ public class EnemyBrain : MonoBehaviour
             StateMachine.Initialize(_patrol);
             SetPatrolDirection();
         }
+
+        playerTransform = FindFirstObjectByType(typeof(PlayerBrain)).GetComponent<PlayerBrain>().gameObject.transform;
 
         _lastKnownPlayerLocation = new Vector3(0f,0f,0f);
     }

@@ -44,12 +44,6 @@ public class PlayerBrain : MonoBehaviour
     [Header("Suspicion")]
     public SphereCollider _noiseCollider;
     public NoiseMaker _noiseMaker;
-    public float _suspicionVolume;
-    public float _walkSuspicionRange;
-    public float _sprintSuspicionRange;
-    public float _jumpSuspicionRange;
-    public float _crouchSuspicionRange;
-
 
 
     private string CurStateName => StateMachine?.CurrentPlayerState?.GetType().Name ?? "(null)";

@@ -268,8 +268,8 @@ MonoBehaviour:
   moveDeadzone: 0.06
   idleEnterDelay: 0.08
   idleSpeedThreshold: 0.05
+  _noiseCollider: {fileID: 6476827490919652482}
   _noiseMaker: {fileID: 7178591833357438484}
-  _suspicionVolume: 0
 --- !u!114 &1923232991165386353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -420,15 +420,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NoiseMaker
   _noiseCollider: {fileID: 6476827490919652482}
-  _walkSuspicionRange: 0
-  _sprintSuspicionRange: 0
-  _jumpSuspicionRange: 0
-  _crouchSuspicionRange: 0
+  _walkSuspicionRange: 5
+  _sprintSuspicionRange: 10
+  _jumpSuspicionRange: 7.5
+  _crouchSuspicionRange: 2.5
   _isOnGrass: 0
   _isOnMetal: 0
   _isOnDirt: 0
   _isOnGravel: 0
-  noiseVolume: 0
+  _isOnLeaves: 0
+  _isOnWater: 0
+  noiseVolume: 5
   _isNoiseMadeThisFrame: 0
 --- !u!1 &6294668233895217291
 GameObject:
