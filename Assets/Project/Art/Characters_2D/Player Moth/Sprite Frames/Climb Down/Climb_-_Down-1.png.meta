@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Project/Art/Characters_2D/Player Moth/Sprite Frames/Climb Down/Climb_-_Down-1.png.meta
 guid: b64ba40f9839eb14bb95fee8911523c8
+========
+guid: 3a77244f623c24c46b66d117233af528
+>>>>>>>> develop:Assets/Project/Art/Characters_2D/Player Moth/Sprite Frames/Climb Down/Climb_-_Down-2.png.meta
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
